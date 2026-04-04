@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="LiteGameEngine.vcxproj" Id="3a24de03-6bce-40ea-929b-e6ebe3875ac6" />
+</Solution>

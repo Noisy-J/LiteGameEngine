@@ -1,9 +1,6 @@
 # 🎮 LiteGameEngine Альтернатива 
 > Высокопроизводительный 2D движок на C++ разработанный для ОПД.
 
-![GitHub Repo stars](https://shields.io)
-![License](https://shields.io)
-
 <!-- Иконки технологий -->
 <p align="left">
   <img src="https://github.com/user-attachments/assets/6a25966c-b456-4dad-8476-019c7871bf21" />
@@ -28,3 +25,8 @@
 3. Откройте файл .sln (Solution) в Visual Studio.
 4. Выберите конфигурацию Debug или Release и архитектуру x64.
 5. Нажмите F5 для сборки и запуска.
+
+
+## В проекте участвоваи
+
+Список разработчиков будет предаставлен позже

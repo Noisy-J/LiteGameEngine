@@ -10,14 +10,15 @@ class Engine {
 public:
     Engine();
     void run();
-    void resetCamera();
-    void centerCameraOnEntity(Entity entity);
-    void renderInspector(Entity entity, Scene* scene);
+    //void resetCamera();
+    //void centerCameraOnEntity(Entity entity);
 
 private:
     void input();
     void update(sf::Time dt, Scene* scene);
     void draw();
+    void renderInspector(Entity entity, Scene* scene);
+
 
     sf::RenderWindow m_Window;
     sf::Clock m_Clock;
@@ -26,14 +27,17 @@ private:
     sf::RenderTexture m_Viewport;
     Entity m_Player;
 
-    // 
-    bool m_isDraggingCamera = false;
+    // Camera dragging
+    bool m_isDraggingCamera;
     sf::Vector2i m_lastMousePos;
-    sf::View m_cameraView;
 
-    Entity m_SelectedEntity = -1;
-    bool m_isDraggingEntity = false;
+    // Entity dragging
+    bool m_isDraggingEntity;
+    Entity m_SelectedEntity;
     sf::Vector2f m_dragOffset;
+    sf::Vector2f m_dragStartPos;
+    float m_dragThreshold;
+
 
     sf::Vector2f m_viewportPos;  // Позиция вьюпорта в окне
     sf::Vector2f m_viewportSize; // Размер вьюпорта

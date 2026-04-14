@@ -1,19 +1,25 @@
 #include "Engine.hpp"
 #include <iostream>
+#include <cmath>
 
 #define GET_NAME(var) #var
 
 // Объект (Движок)
-Engine::Engine() {
-    m_Window.create(sf::VideoMode({ 1920, 1080 }), "Lite Game Engine v0.7");
+Engine::Engine()
+    : m_isDraggingCamera(false)
+    , m_isDraggingEntity(false)
+    , m_SelectedEntity(-1)
+    , m_dragOffset({ 0.f, 0.f })
+    , m_dragStartPos({ 0.f, 0.f })
+    , m_dragThreshold(5.0f)
+{
+    m_Window.create(sf::VideoMode({ 1920, 1080 }), "Lite Game Engine v0.7b");
     m_Viewport.resize({ 800, 600 });
     m_Window.setFramerateLimit(60);
 
     if (!ImGui::SFML::Init(m_Window)) {
         std::cerr << "Failed to initialize ImGui" << std::endl;
     }
-
-    m_isDraggingCamera = false;
 }
 
 // При запуске
@@ -68,9 +74,9 @@ void Engine::input() {
             m_Window.close();
         }
 
-        // Правая кнопка мыши для движения камеры
+        // Средняя кнопка мыши для движения камеры
         if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonPressed>()) {
-            if (mouseButton->button == sf::Mouse::Button::Middle) { 
+            if (mouseButton->button == sf::Mouse::Button::Middle) {
                 m_isDraggingCamera = true;
                 m_lastMousePos = sf::Mouse::getPosition(m_Window);
                 m_Window.setMouseCursorVisible(false);
@@ -92,6 +98,7 @@ void Engine::input() {
             m_Viewport.setView(view);
         }
 
+        // Правая кнопка мыши - захват объекта
         if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonPressed>()) {
             if (mouseButton->button == sf::Mouse::Button::Right) {
                 sf::Vector2i pixelPos = sf::Mouse::getPosition(m_Window);
@@ -104,13 +111,26 @@ void Engine::input() {
 
                     m_SelectedEntity = -1;
 
-                    for (auto& [entity, spriteComp] : m_Scene.sprites) {
-                        if (spriteComp.sprite->getGlobalBounds().contains(worldPos)) {
+                    // Ищем сущность под курсором (проверяем от задних к передним для правильного Z-order)
+                    for (auto it = m_Scene.sprites.end(); it != m_Scene.sprites.begin(); ) {
+                        --it;
+                        auto& [entity, spriteComp] = *it;
+
+                        // Получаем глобальные границы спрайта
+                        sf::FloatRect bounds = spriteComp.sprite->getGlobalBounds();
+
+                        // Проверяем попадание
+                        if (bounds.contains(worldPos)) {
                             m_SelectedEntity = entity;
                             m_isDraggingEntity = true;
+
                             auto& tf = m_Scene.transforms[entity];
+
+                            // ВАЖНО: Сохраняем смещение в МИРОВЫХ координатах
+                            // При инвертированном Y, worldPos.y уже инвертирован
                             m_dragOffset.x = tf.Pos.x - worldPos.x;
                             m_dragOffset.y = tf.Pos.y - (-worldPos.y);
+
                             break;
                         }
                     }
@@ -118,30 +138,7 @@ void Engine::input() {
             }
         }
 
-        if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonPressed>()) {
-            if (mouseButton->button == sf::Mouse::Button::Right) {
-                // 1. Переводим экранные координаты мыши в мировые координаты вьюпорта
-                sf::Vector2i pixelPos = sf::Mouse::getPosition(m_Window);
-                sf::Vector2f worldPos = m_Window.mapPixelToCoords(pixelPos, m_Viewport.getView());
-
-                m_SelectedEntity = -1; // Сбрасываем выбор
-
-                // 2. Picker: Перебираем все спрайты и проверяем попадание
-                for (auto& [entity, spriteComp] : m_Scene.sprites) {
-                    if (spriteComp.sprite->getGlobalBounds().contains(worldPos)) {
-                        m_SelectedEntity = entity;
-
-                        // 3. Подготовка к перетаскиванию (Guizmos)
-                        m_isDraggingEntity = true;
-                        auto& tf = m_Scene.transforms[entity];
-                        m_dragOffset.x = tf.Pos.x - worldPos.x;
-                        m_dragOffset.y = tf.Pos.y - (-worldPos.y);
-                        break;
-                    }
-                }
-            }
-        }
-
+        // Отпускание правой кнопки мыши
         if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonReleased>()) {
             if (mouseButton->button == sf::Mouse::Button::Right) {
                 m_isDraggingEntity = false;
@@ -149,59 +146,56 @@ void Engine::input() {
         }
     }
 
-
+    // Перетаскивание объекта (обработка вне цикла событий для плавности)
     if (m_isDraggingEntity && m_SelectedEntity != -1) {
-        // Получаем позицию мыши относительно окна
         sf::Vector2i pixelPos = sf::Mouse::getPosition(m_Window);
 
         // Проверяем, находится ли мышь внутри области вьюпорта
         if (pixelPos.x >= m_viewportPos.x && pixelPos.x <= m_viewportPos.x + m_viewportSize.x &&
             pixelPos.y >= m_viewportPos.y && pixelPos.y <= m_viewportPos.y + m_viewportSize.y) {
 
-            // Конвертируем координаты мыши из оконных в координаты вьюпорта
             sf::Vector2f worldPos = m_Window.mapPixelToCoords(pixelPos, m_Viewport.getView());
 
-            // Обновляем позицию компонента
+            // Обновляем позицию компонента - ПРЯМО ТАМ ГДЕ КУРСОР
             auto& tf = m_Scene.transforms[m_SelectedEntity];
             tf.Pos.x = worldPos.x + m_dragOffset.x;
-            tf.Pos.y = (-worldPos.y) + m_dragOffset.y;
+            tf.Pos.y = -worldPos.y + m_dragOffset.y ;
         }
     }
-
 
     // Перетаскивание камеры
     if (m_isDraggingCamera) {
         sf::Vector2i currentMousePos = sf::Mouse::getPosition(m_Window);
-        sf::Vector2i delta = currentMousePos - m_lastMousePos;  // Обратите внимание: current - last
+        sf::Vector2i delta = currentMousePos - m_lastMousePos;
 
         if (delta.x != 0 || delta.y != 0) {
             sf::View view = m_Viewport.getView();
-            view.move({ static_cast<float>(-delta.x), static_cast<float>(-delta.y) });  // Минусы для интуитивного движения
+            // Инвертируем delta.y из-за инвертированного view
+            view.move({ static_cast<float>(-delta.x), static_cast<float>(-delta.y) });
             m_Viewport.setView(view);
             m_lastMousePos = currentMousePos;
         }
     }
 
-
     // Обработка клавиатуры для движения игрока
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Left)) {
         if (auto it = m_Scene.velocities.find(m_Player); it != m_Scene.velocities.end()) {
-            it->second.Velocity.x = -100;
+            it->second.Velocity.x = -300;
         }
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Right)) {
         if (auto it = m_Scene.velocities.find(m_Player); it != m_Scene.velocities.end()) {
-            it->second.Velocity.x = 100;
+            it->second.Velocity.x = 300;
         }
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Up)) {
         if (auto it = m_Scene.velocities.find(m_Player); it != m_Scene.velocities.end()) {
-            it->second.Velocity.y = -100;
+            it->second.Velocity.y = 300;  // Положительное значение для движения вверх (из-за инверсии)
         }
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Down)) {
         if (auto it = m_Scene.velocities.find(m_Player); it != m_Scene.velocities.end()) {
-            it->second.Velocity.y = 100;
+            it->second.Velocity.y = -300;  // Отрицательное значение для движения вниз (из-за инверсии)
         }
     }
     else {
@@ -232,19 +226,41 @@ void Engine::update(sf::Time dt, Scene* scene) {
     ImGui::Begin("Debug");
     ImGui::SetWindowPos({ 0,  0 });
     sf::Vector2i mousePos = sf::Mouse::getPosition(m_Window);
-    ImGui::Text("Mouse Position: %d, %d", mousePos.x, mousePos.y);
+    ImGui::Text("Mouse Window: %d, %d", mousePos.x, mousePos.y);
+
+    if (mousePos.x >= m_viewportPos.x && mousePos.x <= m_viewportPos.x + m_viewportSize.x &&
+        mousePos.y >= m_viewportPos.y && mousePos.y <= m_viewportPos.y + m_viewportSize.y) {
+        sf::Vector2f worldPos = m_Window.mapPixelToCoords(mousePos, m_Viewport.getView());
+        ImGui::Text("Mouse World: %.1f, %.1f", worldPos.x, worldPos.y);
+    }
 
     sf::View view = m_Viewport.getView();
     ImGui::Text("Camera Center: %.1f, %.1f", view.getCenter().x, view.getCenter().y);
     ImGui::Text("Camera Size: %.1f, %.1f", view.getSize().x, view.getSize().y);
-    ImGui::Text("Is Dragging: %s", m_isDraggingCamera ? "Yes" : "No");
+    ImGui::Text("Is Dragging Camera: %s", m_isDraggingCamera ? "Yes" : "No");
+    ImGui::Text("Is Dragging Entity: %s", m_isDraggingEntity ? "Yes" : "No");
+    ImGui::Text("Selected Entity: %d", m_SelectedEntity);
+
+    if (m_SelectedEntity != -1) {
+        auto& tf = m_Scene.transforms[m_SelectedEntity];
+        ImGui::Text("Entity Position: %.1f, %.1f", tf.Pos.x, tf.Pos.y);
+        ImGui::Text("Drag Offset: %.1f, %.1f", m_dragOffset.x, m_dragOffset.y);
+    }
 
     if (ImGui::Button("Reset Camera")) {
-        float w = static_cast<float>(0);
-        float h = static_cast<float>(0);
+        float w = static_cast<float>(m_Viewport.getSize().x);
+        float h = static_cast<float>(m_Viewport.getSize().y);
         view.setCenter({ w / 2.f, h / 2.f });
+        view.setSize({ w, -h });
         m_Viewport.setView(view);
     }
+
+    // Кнопка для сброса позиции выбранного объекта
+    if (m_SelectedEntity != -1 && ImGui::Button("Reset Entity Position")) {
+        auto& tf = m_Scene.transforms[m_SelectedEntity];
+        tf.Pos = { 400.f, 300.f };
+    }
+
     ImGui::End();
 }
 
@@ -262,28 +278,66 @@ void Engine::renderInspector(Entity entity, Scene* scene) {
         auto& tf = it->second;
         if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
             float pos[2] = { tf.Pos.x, tf.Pos.y };
-            if (ImGui::DragFloat2("Position", pos, 1.0f)) tf.Pos = { pos[0], pos[1] };
+            if (ImGui::DragFloat2("Position", pos, 1.0f)) {
+                tf.Pos = { pos[0], pos[1] };
+            }
 
             float angle = tf.Rot.asDegrees();
-            if (ImGui::DragFloat("Rotation", &angle, 1.0f)) tf.Rot = sf::degrees(angle);
+            if (ImGui::DragFloat("Rotation", &angle, 1.0f)) {
+                tf.Rot = sf::degrees(angle);
+            }
 
             float scale[2] = { tf.Scale.x, tf.Scale.y };
-            if (ImGui::DragFloat2("Scale", scale, 0.1f)) tf.Scale = { scale[0], scale[1] };
+            if (ImGui::DragFloat2("Scale", scale, 0.1f)) {
+                tf.Scale = { scale[0], scale[1] };
+            }
         }
     }
 
-    // Инспектор Sprite (Цвет) (ДОДЕЛАТЬ!!!)
+    // Инспектор Sprite
     if (auto it = scene->sprites.find(entity); it != scene->sprites.end()) {
         if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen)) {
             sf::Color color = it->second.sprite->getColor();
-            float col[4] = { color.r / 255.f, color.g / 255.f, color.b / 255.f, color.a / 255.f };
+            float col[4] = {
+                static_cast<float>(color.r) / 255.f,
+                static_cast<float>(color.g) / 255.f,
+                static_cast<float>(color.b) / 255.f,
+                static_cast<float>(color.a) / 255.f
+            };
             if (ImGui::ColorEdit4("Tint", col)) {
-                it->second.sprite->setColor(sf::Color(col[0] * 255, col[1] * 255, col[2] * 255, col[3] * 255));
+                it->second.sprite->setColor(sf::Color(
+                    static_cast<std::uint8_t>(col[0] * 255),
+                    static_cast<std::uint8_t>(col[1] * 255),
+                    static_cast<std::uint8_t>(col[2] * 255),
+                    static_cast<std::uint8_t>(col[3] * 255)
+                ));
+            }
+
+            // Дополнительная информация о спрайте
+            sf::FloatRect bounds = it->second.sprite->getGlobalBounds();
+            ImGui::Text("Bounds: %.1f, %.1f, %.1f, %.1f",
+                bounds.position.x, bounds.position.y,
+                bounds.size.x, bounds.size.y);
+
+            // Отладочная информация о текстуре
+            const sf::Texture* tex = &it->second.sprite->getTexture();
+            if (tex) {
+                sf::Vector2u texSize = tex->getSize();
+                ImGui::Text("Texture Size: %u x %u", texSize.x, texSize.y);
+            }
+        }
+    }
+
+    // Инспектор Velocity (если есть)
+    if (auto it = scene->velocities.find(entity); it != scene->velocities.end()) {
+        if (ImGui::CollapsingHeader("Velocity", ImGuiTreeNodeFlags_DefaultOpen)) {
+            float vel[2] = { it->second.Velocity.x, it->second.Velocity.y };
+            if (ImGui::DragFloat2("Velocity", vel, 10.0f)) {
+                it->second.Velocity = { vel[0], vel[1] };
             }
         }
     }
 }
-
 
 // ОТРИСОВКА
 void Engine::draw() {
@@ -291,6 +345,21 @@ void Engine::draw() {
     m_Viewport.clear(sf::Color(100, 100, 100));
 
     RenderSystem::drawSprites(m_Scene, m_Viewport);
+
+    // Рисуем рамку вокруг выбранного объекта
+    if (m_SelectedEntity != -1) {
+        auto it = m_Scene.sprites.find(m_SelectedEntity);
+        if (it != m_Scene.sprites.end()) {
+            sf::FloatRect bounds = it->second.sprite->getGlobalBounds();
+            sf::RectangleShape selectionRect({ bounds.size.x, bounds.size.y });
+            selectionRect.setPosition({ bounds.position.x, bounds.position.y });
+            selectionRect.setFillColor(sf::Color::Transparent);
+            selectionRect.setOutlineColor(sf::Color::Yellow);
+            selectionRect.setOutlineThickness(2.0f);
+            m_Viewport.draw(selectionRect);
+        }
+    }
+
     m_Viewport.display();
 
     ImGui::Begin("Viewport");
@@ -326,8 +395,6 @@ void Engine::draw() {
 
         sf::Vector2f imageSize(viewportSize.x, viewportSize.y);
         ImGui::Image(m_Viewport.getTexture(), imageSize);
-
-
     }
     ImGui::End();
 

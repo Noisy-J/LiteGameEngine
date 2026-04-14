@@ -6,7 +6,7 @@
 
 <!-- Иконки технологий -->
 <p align="left">
-  <img src="https://github.com/Noisy-J/LiteGameEngine/issues/1#issue-4259223101" />
+  <img src="https://github.com/user-attachments/assets/6a25966c-b456-4dad-8476-019c7871bf21" />
 </p>
 
 ## 🛠️ Требования и Зависимости

@@ -6,10 +6,7 @@
 
 <!-- Иконки технологий -->
 <p align="left">
-  <img src="https://shields.io" />
-  <img src="https://shields.io" />
-  <img src="https://shields.io" />
-  <img src="https://shields.io" />
+  <img src="[https://shields.io](https://github.com/Noisy-J/LiteGameEngine/issues/1#issue-4259223101)" />
 </p>
 
 ## 🛠️ Требования и Зависимости
@@ -19,9 +16,9 @@
 1. **IDE**: [Visual Studio 2022](https://microsoft.com) (с установленной нагрузкой "Разработка классических приложений на C++").
 2. **Графический API**: OpenGL 3.3+ или DirectX 11.
 3. **Библиотеки** (будут включены в `/vendor` (установите отдельно):
-   - [SFML 3.0+](https://glfw.org) — Окна и ввод.
-   - [sfml-imgui](https://dav1d.de) — Связка интефейса и окна.
-   - [Dear ImGUI](https://github.com) — Визуальный интефейс.
+   - [SFML 3.0+](https://www.sfml-dev.org/download/sfml/3.0.2/) — Окна и ввод.
+   - [sfml-imgui](https://github.com/SFML/imgui-sfml) — Связка интефейса и окна.
+   - [Dear ImGUI](https://github.com/ocornut/imgui) — Визуальный интефейс.
 
 ## 🚀 Как запустить
 

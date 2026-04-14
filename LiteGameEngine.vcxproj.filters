@@ -86,7 +86,10 @@
     <ClInclude Include="imgui\imconfig-SFML.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="include\GameObject.hpp">
+    <ClInclude Include="include\Components.hpp">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="include\System.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
@@ -99,10 +102,13 @@
     <Text Include="imgui\LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="assets\hero.png">
+    <Image Include="assets\tusur_logo.png">
       <Filter>Файлы ресурсов</Filter>
     </Image>
     <Image Include="src\hero.png">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+    <Image Include="assets\hero.png">
       <Filter>Файлы ресурсов</Filter>
     </Image>
   </ItemGroup>

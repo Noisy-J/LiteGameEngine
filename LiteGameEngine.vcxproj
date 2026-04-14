@@ -154,11 +154,12 @@
     <ClInclude Include="imgui\imstb_rectpack.h" />
     <ClInclude Include="imgui\imstb_textedit.h" />
     <ClInclude Include="imgui\imstb_truetype.h" />
-    <ClInclude Include="include\GameObject.hpp" />
+    <ClInclude Include="include\Components.hpp" />
     <ClInclude Include="include\ResourceManager.hpp" />
     <ClInclude Include="include\Engine.hpp" />
     <ClInclude Include="include\EntityManager.hpp" />
     <ClInclude Include="include\AssetsManager.hpp" />
+    <ClInclude Include="include\System.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui\.editorconfig" />
@@ -170,6 +171,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\hero.png" />
+    <Image Include="assets\tusur_logo.png" />
     <Image Include="src\hero.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

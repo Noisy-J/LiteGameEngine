@@ -2,22 +2,40 @@
 #include "imgui.h"
 #include "imgui-SFML.h"
 #include <SFML/Graphics.hpp>
-//#include "Manager.hpp"
+#include "System.hpp"
+#include "ResourceManager.hpp"
+#include <iostream>
 
 class Engine {
 public:
-	Engine();
-	void run();
-
+    Engine();
+    void run();
+    void resetCamera();
+    void centerCameraOnEntity(Entity entity);
+    void renderInspector(Entity entity, Scene* scene);
 
 private:
+    void input();
+    void update(sf::Time dt, Scene* scene);
+    void draw();
 
-	void input();
-	void update(sf::Time dt, sf::Sprite sprite);
-	void draw(sf::Sprite sprite);
+    sf::RenderWindow m_Window;
+    sf::Clock m_Clock;
+    Scene m_Scene;
+    sf::Texture m_Texture;
+    sf::RenderTexture m_Viewport;
+    Entity m_Player;
 
-	sf::RenderWindow m_Window;
-	sf::Clock m_Clock;
-	//sf::Sprite m_PlayerSprite;
+    // 
+    bool m_isDraggingCamera = false;
+    sf::Vector2i m_lastMousePos;
+    sf::View m_cameraView;
+
+    Entity m_SelectedEntity = -1;
+    bool m_isDraggingEntity = false;
+    sf::Vector2f m_dragOffset;
+
+    sf::Vector2f m_viewportPos;  // Позиция вьюпорта в окне
+    sf::Vector2f m_viewportSize; // Размер вьюпорта
 
 };

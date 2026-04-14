@@ -5,7 +5,13 @@ using namespace std;
 
 int main()
 {
-	cout << "Hello SFML" << endl;
+	//cout <<  << endl;
+	cout << "-----------------" << endl;
+	cout << "|                |" << endl;
+	cout << "|   Engine v0.7  |" << endl;
+	cout << "|                |" << endl;
+	cout << "-----------------" << endl;
+
 
 	Engine engine;
 

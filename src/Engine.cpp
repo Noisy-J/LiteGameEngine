@@ -129,7 +129,7 @@ void Engine::input() {
                             // ВАЖНО: Сохраняем смещение в МИРОВЫХ координатах
                             // При инвертированном Y, worldPos.y уже инвертирован
                             m_dragOffset.x = tf.Pos.x - worldPos.x;
-                            m_dragOffset.y = tf.Pos.y - (-worldPos.y);
+                            m_dragOffset.y = tf.Pos.y - ( - worldPos.y);
 
                             break;
                         }
@@ -210,6 +210,7 @@ void Engine::input() {
 void Engine::update(sf::Time dt, Scene* scene) {
     ImGui::SFML::Update(m_Window, dt);
     MovementSystem::update(*scene, dt.asSeconds());
+    sf::View view = m_Viewport.getView();
 
     // Вызов в Engine::update:
     ImGui::Begin("Inspector");
@@ -223,44 +224,71 @@ void Engine::update(sf::Time dt, Scene* scene) {
     ImGui::End();
 
     // Отладочная информация
-    ImGui::Begin("Debug");
-    ImGui::SetWindowPos({ 0,  0 });
+    // В Debug System замените/добавьте:
+
+// Получаем текущую позицию мыши
+    ImGui::Begin("Debug Panel");
+
     sf::Vector2i mousePos = sf::Mouse::getPosition(m_Window);
-    ImGui::Text("Mouse Window: %d, %d", mousePos.x, mousePos.y);
+    sf::Vector2f worldPos = m_Window.mapPixelToCoords(mousePos, m_Viewport.getView());
 
-    if (mousePos.x >= m_viewportPos.x && mousePos.x <= m_viewportPos.x + m_viewportSize.x &&
-        mousePos.y >= m_viewportPos.y && mousePos.y <= m_viewportPos.y + m_viewportSize.y) {
-        sf::Vector2f worldPos = m_Window.mapPixelToCoords(mousePos, m_Viewport.getView());
-        ImGui::Text("Mouse World: %.1f, %.1f", worldPos.x, worldPos.y);
+    ImGui::Text("Mouse Window"); ImGui::NextColumn();
+    ImGui::Text("%d, %d", mousePos.x, mousePos.y); ImGui::NextColumn();
+
+    ImGui::Text("Mouse World (mapPixelToCoords)"); ImGui::NextColumn();
+    ImGui::Text("%.2f, %.2f", worldPos.x, worldPos.y); ImGui::NextColumn();
+
+    // Проверяем каждый объект на попадание мыши
+    ImGui::Separator();
+    ImGui::Text("OBJECTS UNDER MOUSE:");
+    ImGui::Separator();
+
+    for (auto& [entity, spriteComp] : m_Scene.sprites) {
+        sf::FloatRect bounds = spriteComp.sprite->getGlobalBounds();
+        bool contains = bounds.contains(worldPos);
+
+        if (contains) {
+            ImGui::TextColored(ImVec4(0, 1, 0, 1), "Entity %d", entity);
+            ImGui::SameLine();
+            ImGui::Text("- Bounds: (%.1f,%.1f) %.1fx%.1f",
+                bounds.position.x, bounds.position.y,
+                bounds.size.x, bounds.size.y);
+        }
     }
-
-    sf::View view = m_Viewport.getView();
-    ImGui::Text("Camera Center: %.1f, %.1f", view.getCenter().x, view.getCenter().y);
-    ImGui::Text("Camera Size: %.1f, %.1f", view.getSize().x, view.getSize().y);
-    ImGui::Text("Is Dragging Camera: %s", m_isDraggingCamera ? "Yes" : "No");
-    ImGui::Text("Is Dragging Entity: %s", m_isDraggingEntity ? "Yes" : "No");
-    ImGui::Text("Selected Entity: %d", m_SelectedEntity);
 
     if (m_SelectedEntity != -1) {
-        auto& tf = m_Scene.transforms[m_SelectedEntity];
-        ImGui::Text("Entity Position: %.1f, %.1f", tf.Pos.x, tf.Pos.y);
-        ImGui::Text("Drag Offset: %.1f, %.1f", m_dragOffset.x, m_dragOffset.y);
-    }
+        auto spriteIt = m_Scene.sprites.find(m_SelectedEntity);
+        if (spriteIt != m_Scene.sprites.end()) {
+            auto& tf = m_Scene.transforms[m_SelectedEntity];
+            sf::FloatRect bounds = spriteIt->second.sprite->getGlobalBounds();
 
-    if (ImGui::Button("Reset Camera")) {
-        float w = static_cast<float>(m_Viewport.getSize().x);
-        float h = static_cast<float>(m_Viewport.getSize().y);
-        view.setCenter({ w / 2.f, h / 2.f });
-        view.setSize({ w, -h });
-        m_Viewport.setView(view);
-    }
+            ImGui::Separator();
+            ImGui::Text("SELECTED ENTITY %d:", m_SelectedEntity);
+            ImGui::Separator();
 
-    // Кнопка для сброса позиции выбранного объекта
-    if (m_SelectedEntity != -1 && ImGui::Button("Reset Entity Position")) {
-        auto& tf = m_Scene.transforms[m_SelectedEntity];
-        tf.Pos = { 400.f, 300.f };
-    }
+            ImGui::Text("Transform Pos"); ImGui::NextColumn();
+            ImGui::Text("%.2f, %.2f", tf.Pos.x, tf.Pos.y); ImGui::NextColumn();
 
+            ImGui::Text("Bounds"); ImGui::NextColumn();
+            ImGui::Text("(%.2f,%.2f) %.2fx%.2f",
+                bounds.position.x, bounds.position.y,
+                bounds.size.x, bounds.size.y); ImGui::NextColumn();
+
+            ImGui::Text("Bounds Center"); ImGui::NextColumn();
+            sf::Vector2f center = bounds.getCenter();
+            ImGui::Text("%.2f, %.2f", center.x, center.y); ImGui::NextColumn();
+
+            // Разница между позицией мыши и центром bounds
+            ImGui::Text("Mouse to Center offset"); ImGui::NextColumn();
+            ImGui::Text("%.2f, %.2f", worldPos.x - center.x, worldPos.y - center.y); ImGui::NextColumn();
+
+            // Проверка contains
+            bool contains = bounds.contains(worldPos);
+            ImGui::Text("Mouse in Bounds"); ImGui::NextColumn();
+            ImGui::TextColored(contains ? ImVec4(0, 1, 0, 1) : ImVec4(1, 0, 0, 1),
+                "%s", contains ? "YES" : "NO"); ImGui::NextColumn();
+        }
+    }
     ImGui::End();
 }
 
@@ -341,24 +369,95 @@ void Engine::renderInspector(Entity entity, Scene* scene) {
 
 // ОТРИСОВКА
 void Engine::draw() {
+
     m_Window.clear(sf::Color(40, 40, 40));
     m_Viewport.clear(sf::Color(100, 100, 100));
 
     RenderSystem::drawSprites(m_Scene, m_Viewport);
 
-    // Рисуем рамку вокруг выбранного объекта
-    if (m_SelectedEntity != -1) {
-        auto it = m_Scene.sprites.find(m_SelectedEntity);
-        if (it != m_Scene.sprites.end()) {
-            sf::FloatRect bounds = it->second.sprite->getGlobalBounds();
-            sf::RectangleShape selectionRect({ bounds.size.x, bounds.size.y });
-            selectionRect.setPosition({ bounds.position.x, bounds.position.y });
-            selectionRect.setFillColor(sf::Color::Transparent);
-            selectionRect.setOutlineColor(sf::Color::Yellow);
-            selectionRect.setOutlineThickness(2.0f);
-            m_Viewport.draw(selectionRect);
+    // Рисуем РЕАЛЬНУЮ зону клика (красные) и обычные хитбоксы (зеленые)
+    // В функции draw(), замените на это:
+
+// Рисуем зону клика, преобразуя координаты мыши в "неинвертированное" пространство
+    for (auto& [entity, spriteComp] : m_Scene.sprites) {
+        // 1. Обычный хитбокс спрайта (зеленый) - это РЕАЛЬНАЯ зона клика
+        sf::FloatRect bounds = spriteComp.sprite->getGlobalBounds();
+        sf::RectangleShape hitbox;
+        hitbox.setPosition({ bounds.position.x, bounds.position.y });
+        hitbox.setSize({ bounds.size.x, bounds.size.y });
+        hitbox.setFillColor(sf::Color(0, 255, 0, 30));
+        hitbox.setOutlineColor(sf::Color::Green);
+        hitbox.setOutlineThickness(1.0f);
+        m_Viewport.draw(hitbox);
+
+        // 2. Получаем позицию мыши и преобразуем её ТАК ЖЕ как при клике
+        sf::Vector2i pixelPos = sf::Mouse::getPosition(m_Window);
+        sf::Vector2f worldPos = m_Window.mapPixelToCoords(pixelPos, m_Viewport.getView());
+
+        // 3. Проверяем, находится ли мышь в bounds (без всякой инверсии)
+        bool isMouseOver = bounds.contains(worldPos);
+
+        // 4. Рисуем дополнительную подсветку если мышь над объектом
+        if (isMouseOver) {
+            sf::RectangleShape hoverHighlight;
+            hoverHighlight.setPosition({ bounds.position.x, bounds.position.y });
+            hoverHighlight.setSize({ bounds.size.x, bounds.size.y });
+            hoverHighlight.setFillColor(sf::Color(255, 255, 0, 40));
+            hoverHighlight.setOutlineColor(sf::Color::Yellow);
+            hoverHighlight.setOutlineThickness(2.0f);
+            m_Viewport.draw(hoverHighlight);
+        }
+
+        // 5. Рисуем точку, где находится мышь в мировых координатах
+        sf::CircleShape mousePoint(3);
+        mousePoint.setPosition(worldPos);
+        mousePoint.setOrigin({ 3, 3 });
+        mousePoint.setFillColor(sf::Color::Magenta);
+        m_Viewport.draw(mousePoint);
+
+        // 6. Для выбранного объекта - дополнительная информация
+        if (entity == m_SelectedEntity) {
+            // Жирная белая рамка
+            sf::RectangleShape debugRect;
+            debugRect.setPosition({ bounds.position.x, bounds.position.y });
+            debugRect.setSize({ bounds.size.x, bounds.size.y });
+            debugRect.setFillColor(sf::Color::Transparent);
+            debugRect.setOutlineColor(sf::Color::White);
+            debugRect.setOutlineThickness(3.0f);
+            m_Viewport.draw(debugRect);
+
+            // Крестик в центре bounds
+            sf::Vector2f center = bounds.getCenter();
+            sf::VertexArray cross(sf::PrimitiveType::Lines, 4);
+            cross[0].position = { center.x - 15, center.y };
+            cross[1].position = { center.x + 15, center.y };
+            cross[2].position = { center.x, center.y - 15 };
+            cross[3].position = { center.x, center.y + 15 };
+            cross[0].color = cross[1].color = cross[2].color = cross[3].color = sf::Color::White;
+            m_Viewport.draw(cross);
+
+            // Рисуем позицию tf.Pos (синяя точка)
+            auto& tf = m_Scene.transforms[entity];
+            sf::CircleShape tfPosPoint(5);
+            tfPosPoint.setPosition(tf.Pos);
+            tfPosPoint.setOrigin({ 5, 5 });
+            tfPosPoint.setFillColor(sf::Color::Blue);
+            m_Viewport.draw(tfPosPoint);
         }
     }
+
+    // Отдельно рисуем позицию мыши для отладки
+    sf::Vector2i pixelPos = sf::Mouse::getPosition(m_Window);
+    sf::Vector2f worldPos = m_Window.mapPixelToCoords(pixelPos, m_Viewport.getView());
+
+    // Рисуем координатную сетку в точке мыши
+    sf::VertexArray mouseCross(sf::PrimitiveType::Lines, 4);
+    mouseCross[0].position = { worldPos.x - 20, worldPos.y };
+    mouseCross[1].position = { worldPos.x + 20, worldPos.y };
+    mouseCross[2].position = { worldPos.x, worldPos.y - 20 };
+    mouseCross[3].position = { worldPos.x, worldPos.y + 20 };
+    mouseCross[0].color = mouseCross[1].color = mouseCross[2].color = mouseCross[3].color = sf::Color(255, 0, 255, 200);
+    m_Viewport.draw(mouseCross);
 
     m_Viewport.display();
 

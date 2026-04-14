@@ -17,6 +17,9 @@ Engine::Engine()
     m_Viewport.resize({ 800, 600 });
     m_Window.setFramerateLimit(60);
 
+
+
+
     if (!ImGui::SFML::Init(m_Window)) {
         std::cerr << "Failed to initialize ImGui" << std::endl;
     }
@@ -111,25 +114,22 @@ void Engine::input() {
 
                     m_SelectedEntity = -1;
 
-                    // Ищем сущность под курсором (проверяем от задних к передним для правильного Z-order)
+                    // Ищем сущность под курсором
                     for (auto it = m_Scene.sprites.end(); it != m_Scene.sprites.begin(); ) {
                         --it;
                         auto& [entity, spriteComp] = *it;
 
-                        // Получаем глобальные границы спрайта
                         sf::FloatRect bounds = spriteComp.sprite->getGlobalBounds();
 
-                        // Проверяем попадание
                         if (bounds.contains(worldPos)) {
                             m_SelectedEntity = entity;
                             m_isDraggingEntity = true;
 
                             auto& tf = m_Scene.transforms[entity];
-
-                            // ВАЖНО: Сохраняем смещение в МИРОВЫХ координатах
-                            // При инвертированном Y, worldPos.y уже инвертирован
+                    
+                            // Просто сохраняем разницу между позицией объекта и позицией мыши
                             m_dragOffset.x = tf.Pos.x - worldPos.x;
-                            m_dragOffset.y = tf.Pos.y - ( - worldPos.y);
+                            m_dragOffset.y = tf.Pos.y - worldPos.y;
 
                             break;
                         }
@@ -231,6 +231,8 @@ void Engine::update(sf::Time dt, Scene* scene) {
 
     sf::Vector2i mousePos = sf::Mouse::getPosition(m_Window);
     sf::Vector2f worldPos = m_Window.mapPixelToCoords(mousePos, m_Viewport.getView());
+
+
 
     ImGui::Text("Mouse Window"); ImGui::NextColumn();
     ImGui::Text("%d, %d", mousePos.x, mousePos.y); ImGui::NextColumn();
@@ -375,10 +377,12 @@ void Engine::draw() {
 
     RenderSystem::drawSprites(m_Scene, m_Viewport);
 
-    // Рисуем РЕАЛЬНУЮ зону клика (красные) и обычные хитбоксы (зеленые)
-    // В функции draw(), замените на это:
 
-// Рисуем зону клика, преобразуя координаты мыши в "неинвертированное" пространство
+    m_Viewport.display();
+
+    auto vp = ImGui::Begin("Viewport");
+
+    // Рисуем зону клика, преобразуя координаты мыши в "неинвертированное" пространство
     for (auto& [entity, spriteComp] : m_Scene.sprites) {
         // 1. Обычный хитбокс спрайта (зеленый) - это РЕАЛЬНАЯ зона клика
         sf::FloatRect bounds = spriteComp.sprite->getGlobalBounds();
@@ -392,7 +396,7 @@ void Engine::draw() {
 
         // 2. Получаем позицию мыши и преобразуем её ТАК ЖЕ как при клике
         sf::Vector2i pixelPos = sf::Mouse::getPosition(m_Window);
-        sf::Vector2f worldPos = m_Window.mapPixelToCoords(pixelPos, m_Viewport.getView());
+        sf::Vector2f worldPos = m_Window.mapPixelToCoords(pixelPos, m_Window.getView());
 
         // 3. Проверяем, находится ли мышь в bounds (без всякой инверсии)
         bool isMouseOver = bounds.contains(worldPos);
@@ -448,7 +452,12 @@ void Engine::draw() {
 
     // Отдельно рисуем позицию мыши для отладки
     sf::Vector2i pixelPos = sf::Mouse::getPosition(m_Window);
-    sf::Vector2f worldPos = m_Window.mapPixelToCoords(pixelPos, m_Viewport.getView());
+    //sf::Vector2f worldPos = { static_cast<float>(pixelPos.x), static_cast<float>(pixelPos.y) };
+    sf::Vector2f worldPos = m_Window.mapPixelToCoords(pixelPos, m_Window.getView());
+
+    worldPos = { worldPos.x - (ImGui::GetWindowPos().x + ((ImGui::GetWindowSize().x-ImGui::GetContentRegionAvail().x))/2), 
+        worldPos.y - (ImGui::GetWindowPos().y + ((ImGui::GetWindowSize().y - ImGui::GetContentRegionAvail().y))/2) };
+
 
     // Рисуем координатную сетку в точке мыши
     sf::VertexArray mouseCross(sf::PrimitiveType::Lines, 4);
@@ -458,10 +467,6 @@ void Engine::draw() {
     mouseCross[3].position = { worldPos.x, worldPos.y + 20 };
     mouseCross[0].color = mouseCross[1].color = mouseCross[2].color = mouseCross[3].color = sf::Color(255, 0, 255, 200);
     m_Viewport.draw(mouseCross);
-
-    m_Viewport.display();
-
-    ImGui::Begin("Viewport");
 
     // Сохраняем позицию вьюпорта в окне
     ImVec2 viewportScreenPos = ImGui::GetCursorScreenPos();

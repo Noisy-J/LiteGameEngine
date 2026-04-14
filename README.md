@@ -6,7 +6,7 @@
 
 <!-- Иконки технологий -->
 <p align="left">
-  <img src="[https://shields.io](https://github.com/Noisy-J/LiteGameEngine/issues/1#issue-4259223101)" />
+  <img src="https://github.com/Noisy-J/LiteGameEngine/issues/1#issue-4259223101" />
 </p>
 
 ## 🛠️ Требования и Зависимости

@@ -12,13 +12,14 @@ Engine::Engine()
     , m_dragOffset({ 0.f, 0.f })
     , m_dragStartPos({ 0.f, 0.f })
     , m_dragThreshold(5.0f)
+    , m_zoomX(1)
+    , m_zoomY(1)
 {
-    m_Window.create(sf::VideoMode({ 1920, 1080 }), "Lite Game Engine v0.7b");
+    m_Window.create(sf::VideoMode({ 1920, 1080 }), "Lite Game Engine v0.9");
     m_Viewport.resize({ 800, 600 });
     m_Window.setFramerateLimit(60);
 
-
-
+    
 
     if (!ImGui::SFML::Init(m_Window)) {
         std::cerr << "Failed to initialize ImGui" << std::endl;
@@ -47,6 +48,8 @@ void Engine::run() {
     m_Scene.setRotation(m_Player, 0);
     m_Scene.setScale(m_Player, { 1, 1 });
     m_Scene.setVelocity(m_Player, { 300, 0 });
+
+
 
     Entity player2 = m_Scene.createEntity();
     m_Scene.setTexture(player2, m_Texture);
@@ -110,7 +113,10 @@ void Engine::input() {
                 if (pixelPos.x >= m_viewportPos.x && pixelPos.x <= m_viewportPos.x + m_viewportSize.x &&
                     pixelPos.y >= m_viewportPos.y && pixelPos.y <= m_viewportPos.y + m_viewportSize.y) {
 
-                    sf::Vector2f worldPos = m_Window.mapPixelToCoords(pixelPos, m_Viewport.getView());
+                    sf::Vector2f worldPos = m_Window.mapPixelToCoords(pixelPos, m_Window.getView());
+
+                    worldPos = { worldPos.x - (m_viewportPos.x),
+                        worldPos.y - (m_viewportPos.y) };
 
                     m_SelectedEntity = -1;
 
@@ -154,12 +160,15 @@ void Engine::input() {
         if (pixelPos.x >= m_viewportPos.x && pixelPos.x <= m_viewportPos.x + m_viewportSize.x &&
             pixelPos.y >= m_viewportPos.y && pixelPos.y <= m_viewportPos.y + m_viewportSize.y) {
 
-            sf::Vector2f worldPos = m_Window.mapPixelToCoords(pixelPos, m_Viewport.getView());
+            sf::Vector2f worldPos = m_Window.mapPixelToCoords(pixelPos, m_Window.getView());
+
+            worldPos = { worldPos.x - (m_viewportPos.x),
+                worldPos.y - (m_viewportPos.y) };
 
             // Обновляем позицию компонента - ПРЯМО ТАМ ГДЕ КУРСОР
             auto& tf = m_Scene.transforms[m_SelectedEntity];
             tf.Pos.x = worldPos.x + m_dragOffset.x;
-            tf.Pos.y = -worldPos.y + m_dragOffset.y ;
+            tf.Pos.y = worldPos.y + m_dragOffset.y ;
         }
     }
 
@@ -190,12 +199,12 @@ void Engine::input() {
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Up)) {
         if (auto it = m_Scene.velocities.find(m_Player); it != m_Scene.velocities.end()) {
-            it->second.Velocity.y = 300;  // Положительное значение для движения вверх (из-за инверсии)
+            it->second.Velocity.y = -300;  // Положительное значение для движения вверх
         }
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Down)) {
         if (auto it = m_Scene.velocities.find(m_Player); it != m_Scene.velocities.end()) {
-            it->second.Velocity.y = -300;  // Отрицательное значение для движения вниз (из-за инверсии)
+            it->second.Velocity.y = 300;  // Отрицательное значение для движения вниз
         }
     }
     else {
@@ -223,21 +232,19 @@ void Engine::update(sf::Time dt, Scene* scene) {
     ImGui::SetWindowPos({ 0,  ((static_cast<float>(m_Window.getSize().y) - (static_cast<float>(ImGui::GetWindowSize().y)))) });
     ImGui::End();
 
-    // Отладочная информация
-    // В Debug System замените/добавьте:
-
 // Получаем текущую позицию мыши
     ImGui::Begin("Debug Panel");
 
     sf::Vector2i mousePos = sf::Mouse::getPosition(m_Window);
-    sf::Vector2f worldPos = m_Window.mapPixelToCoords(mousePos, m_Viewport.getView());
+    sf::Vector2f worldPos = m_Window.mapPixelToCoords(mousePos, m_Window.getView());
 
-
+    worldPos = { worldPos.x - (m_viewportPos.x),
+        worldPos.y - (m_viewportPos.y) };
 
     ImGui::Text("Mouse Window"); ImGui::NextColumn();
     ImGui::Text("%d, %d", mousePos.x, mousePos.y); ImGui::NextColumn();
 
-    ImGui::Text("Mouse World (mapPixelToCoords)"); ImGui::NextColumn();
+    ImGui::Text("Mouse in Viewport"); ImGui::NextColumn();
     ImGui::Text("%.2f, %.2f", worldPos.x, worldPos.y); ImGui::NextColumn();
 
     // Проверяем каждый объект на попадание мыши
@@ -292,6 +299,15 @@ void Engine::update(sf::Time dt, Scene* scene) {
         }
     }
     ImGui::End();
+
+    if (m_isDraggingEntity == false && m_SelectedEntity == -1) {
+        ImGui::Begin("Panel");
+        ImGui::Button("Create Entity");
+
+        ImGui::SetWindowPos({ static_cast<float>(worldPos.x), static_cast<float>(worldPos.y) });
+        ImGui::End();
+    }
+
 }
 
 void Engine::renderInspector(Entity entity, Scene* scene) {
@@ -380,7 +396,18 @@ void Engine::draw() {
 
     m_Viewport.display();
 
-    auto vp = ImGui::Begin("Viewport");
+    ImGui::Begin("Viewport");
+
+    ImVec2 viewportSizeWindow = ImGui::GetWindowSize();
+    m_viewportSizeWindow = { viewportSizeWindow.x, viewportSizeWindow.y };
+
+    ImVec2 viewportSize = ImGui::GetContentRegionAvail();
+    m_viewportSize = { viewportSize.x, viewportSize.y };
+
+    // Сохраняем позицию вьюпорта в окне
+    //ImVec2 viewportScreenPos = ImGui::GetCursorScreenPos();
+    ImVec2 viewportScreenPos = ImGui::GetCursorScreenPos();
+    m_viewportPos = { viewportScreenPos.x, viewportScreenPos.y };
 
     // Рисуем зону клика, преобразуя координаты мыши в "неинвертированное" пространство
     for (auto& [entity, spriteComp] : m_Scene.sprites) {
@@ -397,6 +424,9 @@ void Engine::draw() {
         // 2. Получаем позицию мыши и преобразуем её ТАК ЖЕ как при клике
         sf::Vector2i pixelPos = sf::Mouse::getPosition(m_Window);
         sf::Vector2f worldPos = m_Window.mapPixelToCoords(pixelPos, m_Window.getView());
+
+        worldPos = { worldPos.x - (m_viewportPos.x),
+        worldPos.y - (m_viewportPos.y) };
 
         // 3. Проверяем, находится ли мышь в bounds (без всякой инверсии)
         bool isMouseOver = bounds.contains(worldPos);
@@ -452,11 +482,10 @@ void Engine::draw() {
 
     // Отдельно рисуем позицию мыши для отладки
     sf::Vector2i pixelPos = sf::Mouse::getPosition(m_Window);
-    //sf::Vector2f worldPos = { static_cast<float>(pixelPos.x), static_cast<float>(pixelPos.y) };
     sf::Vector2f worldPos = m_Window.mapPixelToCoords(pixelPos, m_Window.getView());
-
-    worldPos = { worldPos.x - (ImGui::GetWindowPos().x + ((ImGui::GetWindowSize().x-ImGui::GetContentRegionAvail().x))/2), 
-        worldPos.y - (ImGui::GetWindowPos().y + ((ImGui::GetWindowSize().y - ImGui::GetContentRegionAvail().y))/2) };
+    
+    worldPos = { worldPos.x - (m_viewportPos.x),
+        worldPos.y - (m_viewportPos.y) };
 
 
     // Рисуем координатную сетку в точке мыши
@@ -467,13 +496,6 @@ void Engine::draw() {
     mouseCross[3].position = { worldPos.x, worldPos.y + 20 };
     mouseCross[0].color = mouseCross[1].color = mouseCross[2].color = mouseCross[3].color = sf::Color(255, 0, 255, 200);
     m_Viewport.draw(mouseCross);
-
-    // Сохраняем позицию вьюпорта в окне
-    ImVec2 viewportScreenPos = ImGui::GetCursorScreenPos();
-    m_viewportPos = { viewportScreenPos.x, viewportScreenPos.y };
-
-    ImVec2 viewportSize = ImGui::GetContentRegionAvail();
-    m_viewportSize = { viewportSize.x, viewportSize.y };
 
     if (viewportSize.x > 0 && viewportSize.y > 0) {
         if (static_cast<unsigned int>(viewportSize.x) != m_Viewport.getSize().x ||
@@ -487,6 +509,9 @@ void Engine::draw() {
             float zoomX = oldSize.x / static_cast<float>(m_Viewport.getSize().x);
             float zoomY = oldSize.y / static_cast<float>(m_Viewport.getSize().y);
 
+            m_zoomX = zoomX;
+            m_zoomY = zoomY;
+
             m_Viewport.resize({ static_cast<unsigned int>(viewportSize.x),
                                static_cast<unsigned int>(viewportSize.y) });
 
@@ -495,12 +520,15 @@ void Engine::draw() {
             newView.setSize({ static_cast<float>(viewportSize.x) * zoomX,
                              -static_cast<float>(viewportSize.y) * std::abs(zoomY) });
             m_Viewport.setView(newView);
+
         }
 
         sf::Vector2f imageSize(viewportSize.x, viewportSize.y);
         ImGui::Image(m_Viewport.getTexture(), imageSize);
     }
     ImGui::End();
+
+
 
     ImGui::SFML::Render(m_Window);
     m_Window.display();

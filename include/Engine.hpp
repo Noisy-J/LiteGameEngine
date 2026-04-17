@@ -18,6 +18,7 @@ private:
     void update(sf::Time dt, Scene* scene);
     void draw();
     void renderInspector(Entity entity, Scene* scene);
+    void renderCreatePanel();
 
 
     sf::RenderWindow m_Window;
@@ -41,5 +42,7 @@ private:
 
     sf::Vector2f m_viewportPos;  // Позиция вьюпорта в окне
     sf::Vector2f m_viewportSize; // Размер вьюпорта
-
+    sf::Vector2f m_viewportSizeWindow; // Размер окна вьюпорта
+    float m_zoomX;
+    float m_zoomY;
 };

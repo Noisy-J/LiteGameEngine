@@ -27,4 +27,6 @@ struct VelocityComponent {
 
 struct PhysicsComponent {
     float mass = 1.0f;
+    sf::Vector2f HitBoxSize{ 0, 0 };
+    sf::Vector2f HitBoxPos{ 0, 0 };
 };

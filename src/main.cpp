@@ -8,7 +8,7 @@ int main()
 	//cout <<  << endl;
 	cout << "-----------------" << endl;
 	cout << "|                |" << endl;
-	cout << "|  Engine v0.7b  |" << endl;
+	cout << "|   Engine v0.9  |" << endl;
 	cout << "|                |" << endl;
 	cout << "-----------------" << endl;
 

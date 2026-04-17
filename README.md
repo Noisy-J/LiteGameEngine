@@ -26,5 +26,5 @@
 
 ##  ✒ Авторы
 
-[Noisy-J] (https://github.com/Noisy-J)
-[egor417] (https://github.com/egor417)
+- [Noisy-J](https://github.com/Noisy-J)
+- [egor417](https://github.com/egor417)

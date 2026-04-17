@@ -18,7 +18,8 @@ private:
     void update(sf::Time dt, Scene* scene);
     void draw();
     void renderInspector(Entity entity, Scene* scene);
-    void renderCreatePanel();
+    sf::Vector2f screenToWorld(sf::Vector2i screenPos);
+    //void renderCreatePanel();
 
 
     sf::RenderWindow m_Window;

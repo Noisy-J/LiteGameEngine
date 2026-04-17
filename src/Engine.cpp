@@ -115,8 +115,10 @@ void Engine::input() {
 
                     sf::Vector2f worldPos = m_Window.mapPixelToCoords(pixelPos, m_Window.getView());
 
-                    worldPos = { worldPos.x - (m_viewportPos.x),
-                        worldPos.y - (m_viewportPos.y) };
+                    //worldPos = { worldPos.x - (m_viewportPos.x),
+                      //  worldPos.y - (m_viewportPos.y) };
+
+                    worldPos = screenToWorld(pixelPos);
 
                     m_SelectedEntity = -1;
 
@@ -162,8 +164,10 @@ void Engine::input() {
 
             sf::Vector2f worldPos = m_Window.mapPixelToCoords(pixelPos, m_Window.getView());
 
-            worldPos = { worldPos.x - (m_viewportPos.x),
-                worldPos.y - (m_viewportPos.y) };
+            //worldPos = { worldPos.x - (m_viewportPos.x),
+              //  worldPos.y - (m_viewportPos.y) };
+
+            worldPos = screenToWorld(pixelPos);
 
             // Обновляем позицию компонента - ПРЯМО ТАМ ГДЕ КУРСОР
             auto& tf = m_Scene.transforms[m_SelectedEntity];
@@ -238,8 +242,10 @@ void Engine::update(sf::Time dt, Scene* scene) {
     sf::Vector2i mousePos = sf::Mouse::getPosition(m_Window);
     sf::Vector2f worldPos = m_Window.mapPixelToCoords(mousePos, m_Window.getView());
 
-    worldPos = { worldPos.x - (m_viewportPos.x),
-        worldPos.y - (m_viewportPos.y) };
+    //worldPos = { worldPos.x - (m_viewportPos.x),
+        //worldPos.y - (m_viewportPos.y) };
+
+    worldPos = screenToWorld(mousePos);
 
     ImGui::Text("Mouse Window"); ImGui::NextColumn();
     ImGui::Text("%d, %d", mousePos.x, mousePos.y); ImGui::NextColumn();
@@ -300,13 +306,13 @@ void Engine::update(sf::Time dt, Scene* scene) {
     }
     ImGui::End();
 
-    if (m_isDraggingEntity == false && m_SelectedEntity == -1) {
-        ImGui::Begin("Panel");
-        ImGui::Button("Create Entity");
+    //if (m_isDraggingEntity == false && m_SelectedEntity == -1) {
+        //ImGui::Begin("Panel");
+        //ImGui::Button("Create Entity");
 
-        ImGui::SetWindowPos({ static_cast<float>(worldPos.x), static_cast<float>(worldPos.y) });
-        ImGui::End();
-    }
+        //ImGui::SetWindowPos({ static_cast<float>(worldPos.x), static_cast<float>(worldPos.y) });
+        //ImGui::End();
+    //}
 
 }
 
@@ -425,8 +431,10 @@ void Engine::draw() {
         sf::Vector2i pixelPos = sf::Mouse::getPosition(m_Window);
         sf::Vector2f worldPos = m_Window.mapPixelToCoords(pixelPos, m_Window.getView());
 
-        worldPos = { worldPos.x - (m_viewportPos.x),
-        worldPos.y - (m_viewportPos.y) };
+        //worldPos = { worldPos.x - (m_viewportPos.x),
+        //worldPos.y - (m_viewportPos.y) };
+
+        worldPos = screenToWorld(pixelPos);
 
         // 3. Проверяем, находится ли мышь в bounds (без всякой инверсии)
         bool isMouseOver = bounds.contains(worldPos);
@@ -484,8 +492,9 @@ void Engine::draw() {
     sf::Vector2i pixelPos = sf::Mouse::getPosition(m_Window);
     sf::Vector2f worldPos = m_Window.mapPixelToCoords(pixelPos, m_Window.getView());
     
-    worldPos = { worldPos.x - (m_viewportPos.x),
-        worldPos.y - (m_viewportPos.y) };
+    //worldPos = { worldPos.x - (m_viewportPos.x),
+    //worldPos.y - (m_viewportPos.y) };
+    worldPos = screenToWorld(pixelPos);
 
 
     // Рисуем координатную сетку в точке мыши
@@ -532,4 +541,38 @@ void Engine::draw() {
 
     ImGui::SFML::Render(m_Window);
     m_Window.display();
+}
+
+// Функция для конвертации экранных координат в мировые координаты вьюпорта
+sf::Vector2f Engine::screenToWorld(sf::Vector2i screenPos) {
+    // Получаем view вьюпорта
+    sf::View viewportView = m_Viewport.getView();
+
+    float relativeX = (screenPos.x - m_viewportPos.x) / m_viewportSize.x;
+    float relativeY = (screenPos.y - m_viewportPos.y) / m_viewportSize.y;
+
+    // Проверяем, что точка внутри вьюпорта
+    if (relativeX < 0 || relativeX > 1 || relativeY < 0 || relativeY > 1) {
+        return { -1, -1 }; // Вне вьюпорта
+    }
+
+    // Получаем параметры view
+    sf::Vector2f viewCenter = viewportView.getCenter();
+    sf::Vector2f viewSize = viewportView.getSize();
+
+    // Вычисляем мировые координаты
+    float worldX = viewCenter.x + (relativeX - 0.5f) * viewSize.x;
+
+    // Для Y учитываем инверсию
+    float worldY;
+    if (viewSize.y < 0) {
+        // Если view инвертирован по Y (высота отрицательная)
+        worldY = viewCenter.y - (relativeY - 0.5f) * viewSize.y;
+    }
+    else {
+        // Обычный view
+        worldY = viewCenter.y + (relativeY - 0.5f) * viewSize.y;
+    }
+
+    return { worldX, worldY };
 }

@@ -19,6 +19,8 @@
 *.so
 *.dylib
 *.dll
+
+#SFML.DLL
 !sfml-audio-3.dll
 !sfml-audio-d-3.dll
 !sfml-graphics-3.dll
@@ -30,6 +32,7 @@
 !sfml-window-3.dll
 !sfml-window-d-3.dll
 # Fortran module files
+
 *.mod
 *.smod
 
@@ -38,6 +41,8 @@
 *.la
 *.a
 *.lib
+
+!/libs
 
 # Executables
 *.exe

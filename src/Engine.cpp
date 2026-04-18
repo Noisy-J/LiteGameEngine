@@ -542,6 +542,8 @@ void Engine::draw() {
     ImGui::SFML::Render(m_Window);
     m_Window.display();
 }
+ 
+
 
 // Функция для конвертации экранных координат в мировые координаты вьюпорта
 sf::Vector2f Engine::screenToWorld(sf::Vector2i screenPos) {

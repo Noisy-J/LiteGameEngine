@@ -42,7 +42,9 @@
 *.a
 *.lib
 
-!/libs
+#
+!libs/
+!libs/**
 
 # Executables
 *.exe

@@ -1,5 +1,5 @@
 #pragma once
-#include "EntityManager.hpp"
+#include "Scene.hpp"
 #include <iostream>
 
 class MovementSystem {

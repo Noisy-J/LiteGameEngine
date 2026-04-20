@@ -105,7 +105,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)libs\SFML-3.0.2\include;$(ProjectDir)include;$(ProjectDir)imgui</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)libs\SFML-3.0.2\include;$(ProjectDirl)libs\imgui;$(ProjectDir)src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -123,7 +123,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)libs\SFML-3.0.2\include;$(ProjectDir)include;$(ProjectDir)imgui</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)libs\SFML-3.0.2\include;$(ProjectDirl)libs\imgui;$(ProjectDir)src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -133,46 +133,77 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="imgui\imgui-SFML.cpp" />
-    <ClCompile Include="imgui\imgui.cpp" />
-    <ClCompile Include="imgui\imgui_demo.cpp" />
-    <ClCompile Include="imgui\imgui_draw.cpp" />
-    <ClCompile Include="imgui\imgui_tables.cpp" />
-    <ClCompile Include="imgui\imgui_widgets.cpp" />
-    <ClCompile Include="src\GameObject.cpp" />
-    <ClCompile Include="src\ResourceManager.cpp" />
-    <ClCompile Include="src\Engine.cpp" />
+    <ClCompile Include="libs\imgui\imgui-SFML.cpp" />
+    <ClCompile Include="libs\imgui\imgui.cpp" />
+    <ClCompile Include="libs\imgui\imgui_demo.cpp" />
+    <ClCompile Include="libs\imgui\imgui_draw.cpp" />
+    <ClCompile Include="libs\imgui\imgui_tables.cpp" />
+    <ClCompile Include="libs\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\Core\Engine.cpp" />
+    <ClCompile Include="src\ECS\Scene.cpp" />
+    <ClCompile Include="src\ECS\Systems\MovementSystem.cpp" />
+    <ClCompile Include="src\ECS\Systems\RenderSystem.cpp" />
+    <ClCompile Include="src\Editor\Dialogs\CreateEntityDialog.cpp" />
+    <ClCompile Include="src\Editor\Dialogs\TextureSelectorDialog.cpp" />
+    <ClCompile Include="src\Editor\EditorUI.cpp" />
+    <ClCompile Include="src\Editor\Panels\ContentBrowserPanel.cpp" />
+    <ClCompile Include="src\Editor\Panels\DebugPanel.cpp" />
+    <ClCompile Include="src\Editor\Panels\InspectorPanel.cpp" />
+    <ClCompile Include="src\Editor\Panels\ViewportPanel.cpp" />
+    <ClCompile Include="src\Input\CameraController.cpp" />
+    <ClCompile Include="src\Input\EntityDragger.cpp" />
+    <ClCompile Include="src\Input\InputManager.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Rendering\Viewport.cpp" />
+    <ClCompile Include="src\Resources\ResourceManager.cpp" />
+    <ClCompile Include="src\Resources\TextureBrowser.cpp" />
+    <ClCompile Include="src\Utils\CoordinateConverter.cpp" />
+    <ClCompile Include="src\Utils\FileUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="imgui\imconfig-SFML.h" />
-    <ClInclude Include="imgui\imconfig.h" />
-    <ClInclude Include="imgui\imgui-SFML.h" />
-    <ClInclude Include="imgui\imgui-SFML_export.h" />
-    <ClInclude Include="imgui\imgui.h" />
-    <ClInclude Include="imgui\imgui_internal.h" />
-    <ClInclude Include="imgui\imstb_rectpack.h" />
-    <ClInclude Include="imgui\imstb_textedit.h" />
-    <ClInclude Include="imgui\imstb_truetype.h" />
-    <ClInclude Include="include\Components.hpp" />
-    <ClInclude Include="include\ResourceManager.hpp" />
-    <ClInclude Include="include\Engine.hpp" />
-    <ClInclude Include="include\EntityManager.hpp" />
-    <ClInclude Include="include\AssetsManager.hpp" />
-    <ClInclude Include="include\System.hpp" />
+    <ClInclude Include="libs\imgui\imconfig-SFML.h" />
+    <ClInclude Include="libs\imgui\imconfig.h" />
+    <ClInclude Include="libs\imgui\imgui-SFML.h" />
+    <ClInclude Include="libs\imgui\imgui-SFML_export.h" />
+    <ClInclude Include="libs\imgui\imgui.h" />
+    <ClInclude Include="libs\imgui\imgui_internal.h" />
+    <ClInclude Include="libs\imgui\imstb_rectpack.h" />
+    <ClInclude Include="libs\imgui\imstb_textedit.h" />
+    <ClInclude Include="libs\imgui\imstb_truetype.h" />
+    <ClInclude Include="src\Core\Engine.hpp" />
+    <ClInclude Include="src\ECS\Components.hpp" />
+    <ClInclude Include="src\ECS\Entity.hpp" />
+    <ClInclude Include="src\ECS\Scene.hpp" />
+    <ClInclude Include="src\ECS\System.hpp" />
+    <ClInclude Include="src\ECS\Systems\MovementSystem.hpp" />
+    <ClInclude Include="src\ECS\Systems\RenderSystem.hpp" />
+    <ClInclude Include="src\Editor\Dialogs\CreateEntityDialog.hpp" />
+    <ClInclude Include="src\Editor\Dialogs\TextureSelectorDialog.hpp" />
+    <ClInclude Include="src\Editor\EditorUI.hpp" />
+    <ClInclude Include="src\Editor\Panels\ContentBrowserPanel.hpp" />
+    <ClInclude Include="src\Editor\Panels\DebugPanel.hpp" />
+    <ClInclude Include="src\Editor\Panels\InspectorPanel.hpp" />
+    <ClInclude Include="src\Editor\Panels\ViewportPanel.hpp" />
+    <ClInclude Include="src\Input\CameraController.hpp" />
+    <ClInclude Include="src\Input\EntityDragger.hpp" />
+    <ClInclude Include="src\Input\InputManager.hpp" />
+    <ClInclude Include="src\Rendering\Viewport.hpp" />
+    <ClInclude Include="src\Resources\ResourceManager.hpp" />
+    <ClInclude Include="src\Resources\TextureBrowser.hpp" />
+    <ClInclude Include="src\Utils\CoordinateConverter.hpp" />
+    <ClInclude Include="src\Utils\FileUtils.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="imgui\.editorconfig" />
-    <None Include="imgui\.gitattributes" />
-    <None Include="imgui\.gitignore" />
+    <None Include="libs\imgui\.editorconfig" />
+    <None Include="libs\imgui\.gitattributes" />
+    <None Include="libs\imgui\.gitignore" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="imgui\LICENSE.txt" />
+    <Text Include="libs\imgui\LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="assets\hero.png" />
-    <Image Include="assets\tusur_logo.png" />
-    <Image Include="src\hero.png" />
+    <Image Include="assets\textures\hero.png" />
+    <Image Include="assets\textures\tusur_logo.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

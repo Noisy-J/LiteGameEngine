@@ -1,21 +1,15 @@
-﻿#include <iostream>
-#include "Engine.hpp"
+﻿#include "Core/Engine.hpp"
+#include <iostream>
 
-using namespace std;
+int main() {
+    try {
+        Engine engine;
+        engine.run();
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Fatal error: " << e.what() << std::endl;
+        return 1;
+    }
 
-int main()
-{
-	//cout <<  << endl;
-	cout << "-----------------" << endl;
-	cout << "|                |" << endl;
-	cout << "|   Engine v0.9  |" << endl;
-	cout << "|                |" << endl;
-	cout << "-----------------" << endl;
-
-
-	Engine engine;
-
-	engine.run();
-
-	return 0;
+    return 0;
 }

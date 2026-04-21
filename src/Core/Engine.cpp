@@ -16,7 +16,7 @@ Engine::Engine() {
 }
 
 void Engine::initializeWindow() {
-    m_Window.create(sf::VideoMode({ 1920, 1080 }), "Lite Game Engine v0.9");
+    m_Window.create(sf::VideoMode({ 1920, 1080 }), "Lite Game Engine v1.0.0");
     m_Window.setFramerateLimit(60);
 }
 
@@ -108,6 +108,13 @@ void Engine::update(float deltaTime) {
     // Обновление UI редактора
     Entity selectedEntity = m_InputManager->getSelectedEntity();
     m_EditorUI->update(selectedEntity, deltaTime);
+
+    // Прямая передача состояния контекстного меню
+    if (m_InputManager->isContextMenuOpen()) {
+        sf::Vector2f menuPos = m_InputManager->getContextMenuPos();
+        m_EditorUI->showContextMenu(menuPos);
+        m_InputManager->closeContextMenu(); // Закрываем после передачи
+    }
 }
 
 //Рендеринг

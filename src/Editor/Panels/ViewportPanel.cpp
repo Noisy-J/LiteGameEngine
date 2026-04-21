@@ -9,7 +9,7 @@ void ViewportPanel::render() {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     ImGui::Begin("Viewport");
 
-    //renderToolbar();
+    renderToolbar();
 
     ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
@@ -31,11 +31,15 @@ void ViewportPanel::render() {
 }
 
 void ViewportPanel::renderToolbar() {
-    ImGui::BeginChild("ViewportToolbar", ImVec2(0, 30));
+    ImGui::BeginChild("ViewportToolbar", ImVec2(0, 20));
 
-    if (ImGui::Button("Mode")) {}
-    //ImGui::SameLine();
-    if (ImGui::Button("View")) {}
+    if (ImGui::Button("Mode")) {
+
+    }
+    ImGui::SameLine(0, 1);
+    if (ImGui::Button("View")) {
+
+    }
     //ImGui::SameLine();
     //if (ImGui::Button("Rotate")) {}
     //ImGui::SameLine();

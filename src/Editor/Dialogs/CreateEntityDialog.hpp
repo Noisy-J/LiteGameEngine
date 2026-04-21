@@ -81,7 +81,7 @@ private:
 
     void createEntity();
     void scanTextures();
-    void loadTexturePreview();
+    //void loadTexturePreview();
 
     // Вспомогательные методы
     const char* getStepName(int step) const;

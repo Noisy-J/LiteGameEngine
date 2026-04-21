@@ -65,7 +65,9 @@ void ContentBrowserPanel::renderFileGrid() {
         ImGui::PushID(item.c_str());
 
         // Кнопка-превью
-        ImGui::Button(item.c_str(), ImVec2(m_ThumbnailSize, m_ThumbnailSize));
+        if (ImGui::Button(item.c_str(), ImVec2(m_ThumbnailSize, m_ThumbnailSize))) {
+            //Реализация деректории
+        }
 
         // Drag and drop
         if (ImGui::BeginDragDropSource()) {

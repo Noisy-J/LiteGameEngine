@@ -11,6 +11,7 @@
 #include "Panels/ContentBrowserPanel.hpp"
 #include "Dialogs/TextureSelectorDialog.hpp"
 #include "Dialogs/CreateEntityDialog.hpp"
+#include "Input/InputManager.hpp"
 
 class EditorUI {
 public:

@@ -19,7 +19,7 @@ public:
     // Геттеры состояния
     Entity getSelectedEntity() const { return m_SelectedEntity; }
     sf::Vector2f getMouseWorldPos() const { return m_MouseWorldPos; }
-    bool isContextMenuOpen() const { return m_ShowContextMenu; }
+    const bool isContextMenuOpen() const { return m_ShowContextMenu; }
     sf::Vector2f getContextMenuPos() const { return m_ContextMenuPos; }
 
     // Управление контекстным меню
@@ -47,4 +47,6 @@ private:
     void handleKeyboardEvents(Scene& scene, Entity player);
     void updateMouseWorldPosition();
     void handleEntitySelection(const sf::Vector2i& pixelPos, Scene& scene);
+
+    //void handleEntityCreate(const sf::Vector2i& pixelPos, Scene& scene);
 };

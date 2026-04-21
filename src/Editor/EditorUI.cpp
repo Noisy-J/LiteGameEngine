@@ -21,7 +21,12 @@ EditorUI::EditorUI(sf::RenderWindow& window, Scene& scene, Viewport& viewport)
 }
 
 void EditorUI::update(Entity selectedEntity, float deltaTime) {
-    m_SelectedEntity = selectedEntity;
+        // Не перезаписываем, если у нас уже есть выбранная сущность
+        // и она всё ещё валидна
+        if (selectedEntity != INVALID_ENTITY) {
+            m_SelectedEntity = selectedEntity;
+        }
+        // Если selectedEntity == INVALID_ENTITY, оставляем текущий выбор
 }
 
 void EditorUI::render() {
@@ -41,14 +46,14 @@ void EditorUI::render() {
     // Viewport
     m_ViewportPanel->render();
 
+    // Диалоги
+    m_TextureDialog->render();
+    m_CreateEntityDialog->render();
+
     // Контекстное меню
     if (m_ShowContextMenu) {
         renderContextMenu();
     }
-
-    // Диалоги
-    m_TextureDialog->render();
-    m_CreateEntityDialog->render();  // Добавлено
 }
 
 void EditorUI::renderMainMenu() {
@@ -101,134 +106,159 @@ void EditorUI::renderMainMenu() {
         ImGui::EndMainMenuBar();
     }
 }
+
 void EditorUI::renderContextMenu() {
-    ImGui::OpenPopup("ViewportContextMenu");
-    m_ShowContextMenu = false;
-    
-    if (ImGui::BeginPopup("ViewportContextMenu")) {
+    if (!m_ShowContextMenu) return;
+
+    // Устанавливаем позицию попапа
+    ImGui::SetNextWindowPos(ImVec2(m_ContextMenuPos.x, m_ContextMenuPos.y));
+
+    bool open = true;
+    if (ImGui::Begin("##ContextMenu", &open,
+        ImGuiWindowFlags_AlwaysAutoResize |
+        ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoMove)) {
+
         sf::Vector2f worldPos = CoordinateConverter::screenToWorld(
-            sf::Vector2i(static_cast<int>(m_ContextMenuPos.x), 
-                        static_cast<int>(m_ContextMenuPos.y)),
+            sf::Vector2i(static_cast<int>(m_ContextMenuPos.x),
+                static_cast<int>(m_ContextMenuPos.y)),
             m_Window, m_Viewport);
-        
-        // Заголовок
+
+        // === Create Section ===
         ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Create");
         ImGui::Separator();
-        
+
         if (ImGui::MenuItem("Create Empty Entity")) {
             Entity newEntity = m_Scene.createEntity();
             m_Scene.setPosition(newEntity, worldPos);
+            //m_Scene.setScale(newEntity, worldPos);
             m_SelectedEntity = newEntity;
+            m_ShowContextMenu = false;
+            std::cout << "Created empty entity" << std::endl;
         }
-        
+
         if (ImGui::MenuItem("Create with Wizard...")) {
             showCreateEntityDialog(worldPos);
+            m_ShowContextMenu = false;
+            std::cout << "Opening wizard" << std::endl;
         }
-        
+
         ImGui::Separator();
+
+        // === 2D Object Section ===
         ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "2D Object");
         ImGui::Separator();
-        
+
         if (ImGui::MenuItem("Sprite")) {
             Entity entity = m_Scene.createEntity();
             m_Scene.setPosition(entity, worldPos);
             m_SelectedEntity = entity;
             showTextureBrowser(entity);
+            m_ShowContextMenu = false;
         }
-        
+
         ImGui::Separator();
+
+        // === Physics Section ===
         ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Physics");
         ImGui::Separator();
-        
+
         if (ImGui::BeginMenu("Collider")) {
-            if (ImGui::MenuItem("Box Collider")) {
+            if (ImGui::Selectable("Box Collider")) {
                 Entity entity = m_Scene.createEntity();
                 m_Scene.setPosition(entity, worldPos);
                 auto& col = m_Scene.colliders[entity];
                 col.shape = ColliderComponent::Shape::Box;
-                col.size = {64.f, 64.f};
+                col.size = { 64.f, 64.f };
                 m_SelectedEntity = entity;
+                m_ShowContextMenu = false;
             }
-            
-            if (ImGui::MenuItem("Circle Collider")) {
+            if (ImGui::Selectable("Circle Collider")) {
                 Entity entity = m_Scene.createEntity();
                 m_Scene.setPosition(entity, worldPos);
                 auto& col = m_Scene.colliders[entity];
                 col.shape = ColliderComponent::Shape::Circle;
                 col.radius = 32.f;
                 m_SelectedEntity = entity;
+                m_ShowContextMenu = false;
             }
-            
             ImGui::EndMenu();
         }
-        
+
         if (ImGui::MenuItem("Rigidbody (Physics)")) {
             Entity entity = m_Scene.createEntity();
             m_Scene.setPosition(entity, worldPos);
             m_Scene.velocities[entity] = VelocityComponent{};
             m_SelectedEntity = entity;
+            m_ShowContextMenu = false;
         }
-        
+
         ImGui::Separator();
+
+        // === Prefabs Section ===
         ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Prefabs");
         ImGui::Separator();
-        
+
         if (ImGui::MenuItem("Player")) {
             Entity entity = m_Scene.createEntity();
             m_Scene.setPosition(entity, worldPos);
-            
-            // Добавляем спрайт если есть текстура по умолчанию
             try {
-                auto texture = ResourceManager::loadTexture("./assets/hero.png");
+                auto texture = ResourceManager::loadTexture("./assets/textures/hero.png");
                 m_Scene.setTexture(entity, texture);
-            } catch (...) {}
-            
-            m_Scene.setVelocity(entity, {300.f, 0.f});
+            }
+            catch (...) {}
+            m_Scene.setVelocity(entity, { 0.f, 0.f });
             m_Scene.tags[entity].Tag = "Player";
             m_SelectedEntity = entity;
+            m_ShowContextMenu = false;
+
         }
-        
+
         if (ImGui::MenuItem("Enemy")) {
             Entity entity = m_Scene.createEntity();
             m_Scene.setPosition(entity, worldPos);
-            m_Scene.setVelocity(entity, {150.f, 0.f});
-            
+            m_Scene.setVelocity(entity, { 150.f, 0.f });
             auto& health = m_Scene.healths[entity];
             health.maxHealth = 50;
             health.currentHealth = 50;
-            
             m_Scene.tags[entity].Tag = "Enemy";
             m_SelectedEntity = entity;
+            m_ShowContextMenu = false;
         }
-        
+
         if (ImGui::MenuItem("Item")) {
             Entity entity = m_Scene.createEntity();
             m_Scene.setPosition(entity, worldPos);
             m_Scene.tags[entity].Tag = "Item";
-            
             auto& col = m_Scene.colliders[entity];
             col.isTrigger = true;
-            col.size = {32.f, 32.f};
-            
+            col.size = { 32.f, 32.f };
             m_SelectedEntity = entity;
+            m_ShowContextMenu = false;
         }
-        
+
         if (ImGui::MenuItem("Camera Target")) {
             Entity entity = m_Scene.createEntity();
             m_Scene.setPosition(entity, worldPos);
             m_Scene.tags[entity].Tag = "CameraTarget";
             m_SelectedEntity = entity;
+            m_ShowContextMenu = false;
         }
-        
-        ImGui::Separator();
-        
-        if (ImGui::MenuItem("Paste", "Ctrl+V", false, false)) {
-            // TODO: Реализовать вставку
+
+        // Закрываем при клике вне
+        if (ImGui::IsMouseClicked(0) && !ImGui::IsWindowHovered()) {
+            m_ShowContextMenu = false;
         }
-        
-        ImGui::EndPopup();
+
+        ImGui::End();
+    }
+
+    // Если окно закрыто
+    if (!open) {
+        m_ShowContextMenu = false;
     }
 }
+
 void EditorUI::showTextureBrowser(Entity entity) {
     m_TextureDialog->open(entity);
 }

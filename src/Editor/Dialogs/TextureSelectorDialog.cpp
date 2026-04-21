@@ -1,20 +1,28 @@
 #include "TextureSelectorDialog.hpp"
 #include "../../Resources/TextureBrowser.hpp"
 #include <filesystem>
+#include <iostream>
 
 TextureSelectorDialog::TextureSelectorDialog(Scene& scene)
     : m_Scene(scene) {
 }
 
 void TextureSelectorDialog::open(Entity entity) {
+    std::cout << "TextureSelectorDialog::open called for entity: " << entity << std::endl;
     m_IsOpen = true;
     m_TargetEntity = entity;
+    m_ShouldOpenPopup = true;  // Добавь флаг
     scanTextures();
-    ImGui::OpenPopup("Select Texture");
 }
 
 void TextureSelectorDialog::render() {
     if (!m_IsOpen) return;
+
+    // Открываем попап если нужно
+    if (m_ShouldOpenPopup) {
+        ImGui::OpenPopup("Select Texture");
+        m_ShouldOpenPopup = false;
+    }
 
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
@@ -47,13 +55,11 @@ void TextureSelectorDialog::render() {
             ImGui::EndCombo();
         }
 
-        // Ручной ввод пути
         ImGui::InputText("Or enter path", m_TexturePathBuffer,
             sizeof(m_TexturePathBuffer));
 
         ImGui::Separator();
 
-        // Кнопки
         if (ImGui::Button("Apply", ImVec2(120, 0))) {
             applyTexture();
         }
@@ -73,6 +79,13 @@ void TextureSelectorDialog::scanTextures() {
 }
 
 void TextureSelectorDialog::applyTexture() {
+    // Сначала проверяем, есть ли у сущности спрайт компонент
+    if (!m_Scene.sprites.contains(m_TargetEntity)) {
+        // Если нет - создаём пустой
+        m_Scene.sprites[m_TargetEntity] = SpriteComponent{};
+    }
+
+    // Загружаем текстуру
     if (!m_AvailableTextures.empty() && m_SelectedTextureIndex < m_AvailableTextures.size()) {
         TextureBrowser browser(m_Scene);
         browser.loadTextureToEntity(m_TargetEntity,
@@ -93,3 +106,4 @@ void TextureSelectorDialog::cancel() {
     m_TexturePathBuffer[0] = '\0';
     ImGui::CloseCurrentPopup();
 }
+

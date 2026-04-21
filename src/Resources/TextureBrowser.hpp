@@ -9,7 +9,7 @@ public:
     TextureBrowser(Scene& scene);
     ~TextureBrowser() = default;
 
-    void scanAvailableTextures(const std::string& directory = "./assets");
+    void scanAvailableTextures(const std::string& directory = "./assets/textures");
     void loadTextureToEntity(Entity entity, const std::string& path);
 
     const std::vector<std::string>& getAvailableTextures() const { return m_AvailableTextures; }

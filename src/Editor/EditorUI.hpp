@@ -12,6 +12,9 @@
 #include "Dialogs/TextureSelectorDialog.hpp"
 #include "Dialogs/CreateEntityDialog.hpp"
 #include "Input/InputManager.hpp"
+#include "Serialization/SceneSerializer.hpp"
+#include "Dialogs/FileDialog.hpp"
+
 
 class EditorUI {
 public:
@@ -34,9 +37,14 @@ private:
     std::unique_ptr<DebugPanel> m_DebugPanel;
     std::unique_ptr<ViewportPanel> m_ViewportPanel;
     std::unique_ptr<ContentBrowserPanel> m_ContentBrowserPanel;
-
+    std::unique_ptr<SceneSerializer> m_SceneSerializer;
     std::unique_ptr<TextureSelectorDialog> m_TextureDialog;
     std::unique_ptr<CreateEntityDialog> m_CreateEntityDialog;
+    std::unique_ptr<FileDialog> m_FileDialog;
+
+    void openSceneDialog();
+    void saveSceneDialog();
+    bool m_PendingSave{ false };
 
     Entity m_SelectedEntity{ INVALID_ENTITY };
     bool m_ShowContextMenu{ false };

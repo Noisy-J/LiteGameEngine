@@ -17,6 +17,7 @@ struct TransformComponent {
 struct SpriteComponent {
     std::shared_ptr<sf::Texture> texture;
     std::unique_ptr<sf::Sprite> sprite;  // Убрали std::optional
+    std::string texturePath;
     int layer{ 0 };
     bool visible{ true };
 };

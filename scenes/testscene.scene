@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "entities": [
+    {
+      "id": 0,
+      "transform": {"position":{"x":736.000,"y":410.342},"rotation":0.000,"scale":{"x":1.000,"y":1.000}},
+      "sprite": {"texturePath":"null","layer":0.000,"visible":true},
+      "velocity": {"velocity":{"x":0.000,"y":0.000},"maxSpeed":1000.000,"damping":0.000}
+    },
+    {
+      "id": 1,
+      "transform": {"position":{"x":470.000,"y":13.000},"rotation":0.000,"scale":{"x":0.500,"y":0.500}},
+      "sprite": {"texturePath":"null","layer":0.000,"visible":true}
+    },
+    {
+      "id": 2,
+      "transform": {"position":{"x":300.000,"y":100.000},"rotation":0.000,"scale":{"x":1.000,"y":1.000}},
+      "sprite": {"texturePath":"null","layer":0.000,"visible":true}
+    },
+    {
+      "id": 3,
+      "transform": {"position":{"x":208.000,"y":336.000},"rotation":0.000,"scale":{"x":1.000,"y":1.000}},
+      "sprite": {"texturePath":"./assets/textures\\hero.png","layer":0.000,"visible":true}
+    }
+  ]
+}

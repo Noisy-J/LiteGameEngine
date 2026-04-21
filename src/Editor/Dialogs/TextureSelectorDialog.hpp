@@ -17,6 +17,7 @@ public:
 private:
     Scene& m_Scene;
     bool m_IsOpen{ false };
+    bool m_ShouldOpenPopup{ false };
     Entity m_TargetEntity{ INVALID_ENTITY };
 
     std::vector<std::string> m_AvailableTextures;

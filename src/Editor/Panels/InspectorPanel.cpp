@@ -79,6 +79,9 @@ void InspectorPanel::renderSprite(Entity entity) {
                 ImGui::Text("Texture: %dx%d", texSize.x, texSize.y);
                 ImGui::Text("References: %ld", spriteComp.texture.use_count());
             }
+            else {
+                ImGui::TextColored(ImVec4(1, 1, 0, 1), "No texture assigned");
+            }
 
             // Слой
             ImGui::DragInt("Layer", &spriteComp.layer, 1, -100, 100);
@@ -103,7 +106,15 @@ void InspectorPanel::renderSprite(Entity entity) {
                 }
             }
 
+            // Кнопка смены текстуры
+            if (ImGui::Button("Change Texture")) {
+                if (m_OnAddSprite) {
+                    m_OnAddSprite(entity);
+                }
+            }
+
             // Кнопка удаления компонента
+            ImGui::SameLine();
             if (ImGui::Button("Remove Sprite Component")) {
                 m_Scene.sprites.erase(entity);
             }
@@ -111,11 +122,52 @@ void InspectorPanel::renderSprite(Entity entity) {
     }
     else {
         if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen)) {
-            ImGui::Text("No sprite component");
-            if (ImGui::Button("Add Sprite")) {
-                // TODO: Открыть диалог выбора текстуры
+            ImGui::TextColored(ImVec4(1, 1, 0, 1), "No sprite component");
+            if (ImGui::Button("Add Sprite Component")) {
+                std::cout << "Add Sprite clicked for entity: " << entity << std::endl;
+                if (m_OnAddSprite) {
+                    m_OnAddSprite(entity);
+                }
             }
         }
+    }
+}
+
+void InspectorPanel::renderAddComponentMenu(Entity entity) {
+    ImGui::Text("Add Component");
+
+    if (ImGui::BeginCombo("##AddComponent", "Select component...")) {
+        if (!m_Scene.sprites.contains(entity)) {
+            if (ImGui::Selectable("Sprite")) {
+                std::cout << "Sprite selected from combo for entity: " << entity << std::endl;
+                if (m_OnAddSprite) {
+                    m_OnAddSprite(entity);
+                }
+            }
+        }
+
+        if (!m_Scene.velocities.contains(entity)) {
+            if (ImGui::Selectable("Velocity")) {
+                m_Scene.velocities[entity] = VelocityComponent{};
+                std::cout << "Added Velocity component to entity: " << entity << std::endl;
+            }
+        }
+
+        if (!m_Scene.colliders.contains(entity)) {
+            if (ImGui::Selectable("Collider")) {
+                m_Scene.colliders[entity] = ColliderComponent{};
+                std::cout << "Added Collider component to entity: " << entity << std::endl;
+            }
+        }
+
+        if (!m_Scene.healths.contains(entity)) {
+            if (ImGui::Selectable("Health")) {
+                m_Scene.healths[entity] = HealthComponent{};
+                std::cout << "Added Health component to entity: " << entity << std::endl;
+            }
+        }
+
+        ImGui::EndCombo();
     }
 }
 
@@ -146,37 +198,5 @@ void InspectorPanel::renderVelocity(Entity entity) {
                 m_Scene.velocities[entity] = VelocityComponent{};
             }
         }
-    }
-}
-
-void InspectorPanel::renderAddComponentMenu(Entity entity) {
-    ImGui::Text("Add Component");
-
-    if (ImGui::BeginCombo("##AddComponent", "Select component...")) {
-        if (!m_Scene.sprites.contains(entity)) {
-            if (ImGui::Selectable("Sprite")) {
-                // TODO: Открыть диалог
-            }
-        }
-
-        if (!m_Scene.velocities.contains(entity)) {
-            if (ImGui::Selectable("Velocity")) {
-                m_Scene.velocities[entity] = VelocityComponent{};
-            }
-        }
-
-        if (!m_Scene.colliders.contains(entity)) {
-            if (ImGui::Selectable("Collider")) {
-                m_Scene.colliders[entity] = ColliderComponent{};
-            }
-        }
-
-        if (!m_Scene.healths.contains(entity)) {
-            if (ImGui::Selectable("Health")) {
-                m_Scene.healths[entity] = HealthComponent{};
-            }
-        }
-
-        ImGui::EndCombo();
     }
 }

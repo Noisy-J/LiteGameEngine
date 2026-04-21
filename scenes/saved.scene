@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "name": "saved",
+  "entities": [
+    {
+      "id": 2,
+      "transform": {"position":{"x":781.000,"y":244.000},"rotation":0.000,"scale":{"x":1.000,"y":1.000}},
+      "sprite": {"layer":0.000,"visible":true},
+      "velocity": {"velocity":{"x":0.000,"y":0.000},"maxSpeed":1000.000,"damping":0.000}
+    },
+    {
+      "id": 1,
+      "transform": {"position":{"x":0.000,"y":0.000},"rotation":0.000,"scale":{"x":0.500,"y":0.500}},
+      "sprite": {"layer":0.000,"visible":true}
+    },
+    {
+      "id": 0,
+      "transform": {"position":{"x":300.000,"y":100.000},"rotation":0.000,"scale":{"x":1.000,"y":1.000}},
+      "sprite": {"layer":0.000,"visible":true}
+    },
+    {
+      "id": 3,
+      "transform": {"position":{"x":590.346,"y":299.362},"rotation":0.000,"scale":{"x":1.000,"y":1.000}},
+      "sprite": {"layer":0.000,"visible":true}
+    }
+  ]
+}

@@ -35,7 +35,7 @@ void TextureBrowser::scanAvailableTextures(const std::string& directory) {
 void TextureBrowser::loadTextureToEntity(Entity entity, const std::string& path) {
     try {
         auto texture = ResourceManager::loadTexture(path);
-        m_Scene.setTexture(entity, texture);
+        m_Scene.setTexture(entity, texture, path);  // Передаём путь
     }
     catch (const std::exception& e) {
         std::cerr << "Failed to load texture: " << e.what() << std::endl;

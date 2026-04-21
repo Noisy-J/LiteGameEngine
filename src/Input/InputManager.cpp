@@ -126,4 +126,21 @@ void InputManager::handleKeyboardEvents(Scene& scene, Entity player) {
         sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::S)) {
         velocity.y = speed;
     }
+
+    // Ctrl+S - Сохранить
+   /*if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::LControl) &&
+        sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::S)) {
+        // Вызываем сохранение через callback
+        if (m_SaveCallback) {
+            m_SaveCallback();
+        }
+    }
+
+    // Ctrl+O - Открыть
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::LControl) &&
+        sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::O)) {
+        if (m_LoadCallback) {
+            m_LoadCallback();
+        }
+    }*/
 }

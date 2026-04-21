@@ -26,7 +26,7 @@ public:
     sf::Vector2f getScale(Entity entity) const;
 
     // Sprite
-    void setTexture(Entity entity, std::shared_ptr<sf::Texture> texture);
+    void setTexture(Entity entity, std::shared_ptr<sf::Texture> texture, const std::string& path = "");
     const sf::Texture* getTexture(Entity entity) const;
     sf::Sprite* getSprite(Entity entity);
 

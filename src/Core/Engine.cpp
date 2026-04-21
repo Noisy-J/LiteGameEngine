@@ -47,7 +47,7 @@ void Engine::initializeSubsystems() {
 //Инициализация сущностей, ПОКА ТУТ, пользователь сам должен!
 void Engine::initializeDefaultEntities() {
     // Загружаем текстуры
-    m_DefaultTexture = ResourceManager::loadTexture("./assets/textures/hero.png");
+    /*m_DefaultTexture = ResourceManager::loadTexture("./assets/textures/hero.png");
     auto logoTexture = ResourceManager::loadTexture("./assets/textures/tusur_logo.png");
 
     // Создаём игрока
@@ -70,7 +70,7 @@ void Engine::initializeDefaultEntities() {
     m_Scene.setTexture(logo, logoTexture);
     m_Scene.setPosition(logo, { 300.f, 100.f });
     m_Scene.setRotation(logo, sf::degrees(0.f));
-    m_Scene.setScale(logo, { 1.f, 1.f });
+    m_Scene.setScale(logo, { 1.f, 1.f });*/
 }
 
 void Engine::run() {

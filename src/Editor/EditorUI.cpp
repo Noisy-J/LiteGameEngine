@@ -1,6 +1,14 @@
+//#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#include <filesystem>
 #include "EditorUI.hpp"
 #include "../Resources/ResourceManager.hpp"
 #include "../Utils/CoordinateConverter.hpp"
+#include <chrono>
+#include <sstream>
+#include <iomanip>
+
+//#include <chrono>  // Добавь в начало файла
 
 EditorUI::EditorUI(sf::RenderWindow& window, Scene& scene, Viewport& viewport)
     : m_Window(window)
@@ -13,10 +21,48 @@ EditorUI::EditorUI(sf::RenderWindow& window, Scene& scene, Viewport& viewport)
     m_ContentBrowserPanel = std::make_unique<ContentBrowserPanel>();
     m_TextureDialog = std::make_unique<TextureSelectorDialog>(scene);
     m_CreateEntityDialog = std::make_unique<CreateEntityDialog>(scene);
+    m_SceneSerializer = std::make_unique<SceneSerializer>(scene);
+    m_SceneSerializer = std::make_unique<SceneSerializer>(scene);
+    m_FileDialog = std::make_unique<FileDialog>();
+
+    // Включаем автосохранение
+    //m_SceneSerializer->enableAutoSave("./scenes/autosave.scene", 60.0f);
 
     // Устанавливаем callback для создания сущности
     m_CreateEntityDialog->setOnEntityCreated([this](Entity entity) {
         m_SelectedEntity = entity;
+        });
+
+    // Связываем Inspector с диалогом текстур
+    m_InspectorPanel->setOnAddSprite([this](Entity entity) {
+        std::cout << "OnAddSprite callback called for entity: " << entity << std::endl;
+
+        // Создаём спрайт компонент если его нет
+        if (!m_Scene.sprites.contains(entity)) {
+            m_Scene.sprites[entity] = SpriteComponent{};
+            std::cout << "Created SpriteComponent for entity: " << entity << std::endl;
+        }
+
+        // Открываем диалог выбора текстуры
+        m_TextureDialog->open(entity);
+        std::cout << "Opened texture dialog for entity: " << entity << std::endl;
+        });
+
+
+
+    // Настройка колбэков
+    m_FileDialog->setOnFileSelected([this](const std::string& path) {
+        if (m_PendingSave) {
+            m_SceneSerializer->save(path);
+            std::cout << "Scene saved to: " << path << std::endl;
+            m_PendingSave = false;
+        }
+        else {
+            if (m_SceneSerializer->load(path)) {
+                m_SelectedEntity = INVALID_ENTITY;
+                std::cout << "Scene loaded from: " << path << std::endl;
+            }
+        }
         });
 }
 
@@ -50,22 +96,50 @@ void EditorUI::render() {
     m_TextureDialog->render();
     m_CreateEntityDialog->render();
 
-    // Контекстное меню
+    // Контекстное меню рендерится до FileDialog
     if (m_ShowContextMenu) {
         renderContextMenu();
     }
+
+    // FileDialog рендерится ПОСЛЕДНИМ
+    m_FileDialog->render();
 }
+
+void EditorUI::openSceneDialog() {
+    m_PendingSave = false;
+    m_FileDialog->open(FileDialog::Mode::Open, "Open Scene", "./scenes");
+}
+
+void EditorUI::saveSceneDialog() {
+    m_PendingSave = true;
+    m_FileDialog->open(FileDialog::Mode::Save, "Save Scene", "./scenes");
+}
+
 
 void EditorUI::renderMainMenu() {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
-            if (ImGui::MenuItem("New Scene")) {}
-            if (ImGui::MenuItem("Save Scene")) {}
-            if (ImGui::MenuItem("Load Scene")) {}
+            if (ImGui::MenuItem("New Scene", "Ctrl+N")) {
+                m_SceneSerializer->newScene();
+                m_SelectedEntity = INVALID_ENTITY;
+            }
+
             ImGui::Separator();
-            if (ImGui::MenuItem("Exit")) {
+
+            if (ImGui::MenuItem("Open Scene...", "Ctrl+O")) {
+                openSceneDialog();
+            }
+
+            if (ImGui::MenuItem("Save Scene", "Ctrl+S")) {
+                saveSceneDialog();
+            }
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Exit", "Alt+F4")) {
                 m_Window.close();
             }
+
             ImGui::EndMenu();
         }
 
@@ -82,9 +156,8 @@ void EditorUI::renderMainMenu() {
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("GameObject")) {  // Добавлено меню
+        if (ImGui::BeginMenu("GameObject")) {
             if (ImGui::MenuItem("Create Empty")) {
-                // Создать в центре viewport
                 sf::Vector2f center = m_Viewport.getView().getCenter();
                 showCreateEntityDialog(center);
             }
@@ -106,7 +179,6 @@ void EditorUI::renderMainMenu() {
         ImGui::EndMainMenuBar();
     }
 }
-
 void EditorUI::renderContextMenu() {
     if (!m_ShowContextMenu) return;
 

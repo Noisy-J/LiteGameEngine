@@ -144,6 +144,7 @@
     <ClCompile Include="src\ECS\Systems\MovementSystem.cpp" />
     <ClCompile Include="src\ECS\Systems\RenderSystem.cpp" />
     <ClCompile Include="src\Editor\Dialogs\CreateEntityDialog.cpp" />
+    <ClCompile Include="src\Editor\Dialogs\FileDialog.cpp" />
     <ClCompile Include="src\Editor\Dialogs\TextureSelectorDialog.cpp" />
     <ClCompile Include="src\Editor\EditorUI.cpp" />
     <ClCompile Include="src\Editor\Panels\ContentBrowserPanel.cpp" />
@@ -157,6 +158,7 @@
     <ClCompile Include="src\Rendering\Viewport.cpp" />
     <ClCompile Include="src\Resources\ResourceManager.cpp" />
     <ClCompile Include="src\Resources\TextureBrowser.cpp" />
+    <ClCompile Include="src\Serialization\SceneSerializer.cpp" />
     <ClCompile Include="src\Utils\CoordinateConverter.cpp" />
     <ClCompile Include="src\Utils\FileUtils.cpp" />
   </ItemGroup>
@@ -178,6 +180,7 @@
     <ClInclude Include="src\ECS\Systems\MovementSystem.hpp" />
     <ClInclude Include="src\ECS\Systems\RenderSystem.hpp" />
     <ClInclude Include="src\Editor\Dialogs\CreateEntityDialog.hpp" />
+    <ClInclude Include="src\Editor\Dialogs\FileDialog.hpp" />
     <ClInclude Include="src\Editor\Dialogs\TextureSelectorDialog.hpp" />
     <ClInclude Include="src\Editor\EditorUI.hpp" />
     <ClInclude Include="src\Editor\Panels\ContentBrowserPanel.hpp" />
@@ -190,6 +193,7 @@
     <ClInclude Include="src\Rendering\Viewport.hpp" />
     <ClInclude Include="src\Resources\ResourceManager.hpp" />
     <ClInclude Include="src\Resources\TextureBrowser.hpp" />
+    <ClInclude Include="src\Serialization\SceneSerializer.hpp" />
     <ClInclude Include="src\Utils\CoordinateConverter.hpp" />
     <ClInclude Include="src\Utils\FileUtils.hpp" />
   </ItemGroup>

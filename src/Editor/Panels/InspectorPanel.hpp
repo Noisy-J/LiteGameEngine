@@ -3,6 +3,8 @@
 #include <imgui.h>
 #include "../../ECS/Scene.hpp"
 #include <string>
+#include <functional>
+#include <iostream>
 
 class InspectorPanel {
 public:
@@ -11,16 +13,17 @@ public:
 
     void render(Entity entity);
 
+    // Callback для открытия диалога текстур
+    void setOnAddSprite(std::function<void(Entity)> callback) { m_OnAddSprite = callback; }
+
 private:
     Scene& m_Scene;
     char m_EntityNameBuffer[64] = "";
+
+    std::function<void(Entity)> m_OnAddSprite;
 
     void renderTransform(Entity entity);
     void renderSprite(Entity entity);
     void renderVelocity(Entity entity);
     void renderAddComponentMenu(Entity entity);
-
-    // Вспомогательные функции
-    void beginPropertyChange(const std::string& propertyName);
-    void endPropertyChange();
 };

@@ -19,7 +19,10 @@ Entity Scene::createEntity() {
 }
 
 void Scene::destroyEntity(Entity entity) {
-    if (!isValid(entity)) return;
+    if (!isValid(entity)) {
+        std::cerr << "destroyEntity: Invalid entity " << entity << std::endl;
+        return;
+    }
 
     transforms.erase(entity);
     sprites.erase(entity);
@@ -77,19 +80,18 @@ sf::Vector2f Scene::getScale(Entity entity) const {
 }
 
 // Sprite
-void Scene::setTexture(Entity entity, std::shared_ptr<sf::Texture> texture) {
+void Scene::setTexture(Entity entity, std::shared_ptr<sf::Texture> texture, const std::string& path) {
     auto& spriteComp = sprites[entity];
     spriteComp.texture = texture;
+    spriteComp.texturePath = path;  // Сохраняем путь
 
     if (!spriteComp.sprite) {
-        // Вместо make_unique создаём через new с параметром
-        spriteComp.sprite = std::unique_ptr<sf::Sprite>(new sf::Sprite(*texture));
+        spriteComp.sprite = std::make_unique<sf::Sprite>(*texture);
     }
     else {
         spriteComp.sprite->setTexture(*texture);
     }
 
-    // Центрируем origin
     sf::Vector2u texSize = texture->getSize();
     spriteComp.sprite->setOrigin({
         static_cast<float>(texSize.x) / 2.f,

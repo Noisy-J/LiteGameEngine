@@ -1,0 +1,10 @@
+{
+  "version": "1.0",
+  "entities": [
+    {
+      "id": 3,
+      "transform": {"position":{"x":755.000,"y":219.000},"rotation":0.000,"scale":{"x":1.000,"y":1.000}},
+      "sprite": {"texturePath":"./assets/textures\\hero.png","layer":0.000,"visible":true}
+    }
+  ]
+}

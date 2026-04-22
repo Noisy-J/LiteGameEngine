@@ -1,9 +1,9 @@
-# 🎮 ALTernetive (v 1.0.1)
+# 🎮 ALTernetive (v 1.0.2b)
 
 > Высокопроизводительный 2D игровой движок на C++ с ECS-архитектурой и встроенным редактором, разработанный в рамках курса ОПД.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/a669acfd-5699-426d-a7c4-0e45dc521853"  alt="ALTernetive Banner" />
+  <img src="https://github.com/user-attachments/assets/6486bd54-4c93-421c-a563-ee723ed758e9"  alt="ALTernetive Banner" />
 </p>
 
 <p align="center">
@@ -77,20 +77,20 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                      Application Layer                       │
+│                      Application Layer                      │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
 │  │   Editor    │  │   Systems   │  │   Resource Manager  │  │
 │  │    UI       │  │  Movement   │  │   Texture Cache     │  │
 │  │  Panels     │  │   Render    │  │   Font Cache        │  │
 │  └─────────────┘  └─────────────┘  └─────────────────────┘  │
 ├─────────────────────────────────────────────────────────────┤
-│                        Core Layer                            │
+│                        Core Layer                           │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
 │  │   Engine    │  │    Scene    │  │   Entity Manager    │  │
 │  │  Game Loop  │◄─┤  Container  │◄─┤   Component Store   │  │
 │  └─────────────┘  └─────────────┘  └─────────────────────┘  │
 ├─────────────────────────────────────────────────────────────┤
-│                     Foundation Layer                          │
+│                     Foundation Layer                        │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
 │  │   SFML      │  │   ImGui     │  │   Input Manager     │  │
 │  │  Window     │  │    UI       │  │   Camera Controller │  │

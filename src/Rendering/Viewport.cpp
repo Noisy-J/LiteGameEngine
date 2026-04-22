@@ -72,7 +72,7 @@ void Viewport::renderDebugOverlays(Scene& scene, Entity selectedEntity, const sf
 
         sf::FloatRect bounds = spriteComp.sprite->getGlobalBounds();
 
-        // Зелёный хитбокс
+        // Зелёный хитбокс(текстура)
         sf::RectangleShape hitbox;
         hitbox.setPosition({ bounds.position.x, bounds.position.y });
         hitbox.setSize({ bounds.size.x, bounds.size.y });

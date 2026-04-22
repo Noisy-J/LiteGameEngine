@@ -34,6 +34,18 @@ public:
     void setVelocity(Entity entity, const sf::Vector2f& velocity);
     sf::Vector2f getVelocity(Entity entity) const;
 
+    // Collider
+    void setColliderPosition(Entity entity, const sf::Vector2f& pos);
+    sf::Vector2f getColliderPosition(Entity entity) const;
+    void setColliderRotation(Entity entity, sf::Angle angle);
+    sf::Angle getColliderRotation(Entity entity) const;
+    void setColliderScale(Entity entity, const sf::Vector2f& scale);
+    sf::Vector2f getColliderScale(Entity entity) const;
+    void setColliderOrigin(Entity entity, const sf::Vector2f& origin);
+    sf::Vector2f getColliderOrigin(Entity entity) const;
+    void setColliderSize(Entity entity, const sf::Vector2f& size);
+    sf::Vector2f getColliderSize(Entity entity) const;
+
     // Доступ к данным (для систем)
     std::unordered_map<Entity, TransformComponent> transforms;
     std::unordered_map<Entity, SpriteComponent> sprites;

@@ -49,10 +49,11 @@ struct HealthComponent {
 
 // Collider Component
 struct ColliderComponent {
-    enum class Shape { Box, Circle } shape{ Shape::Box };
-    sf::Vector2f size{ 32.f, 32.f };
-    float radius{ 16.f };
-    sf::Vector2f offset{ 0.f, 0.f };
-    bool isTrigger{ false };
-    bool isStatic{ false };
+    sf::RectangleShape Collider;
+    sf::Vector2f ColliderPosition{ 32.f, 32.f };
+    sf::Angle ColliderRotation{ sf::degrees(0.f) };
+    sf::Vector2f ColliderScale{ 1.f, 1.f };
+    sf::Vector2f ColliderOrigin{ 0.f, 0.f };
+    //float CollidRadius{ 16.f };
+    sf::Vector2f ColliderSize{ 32.f,32.f };
 };

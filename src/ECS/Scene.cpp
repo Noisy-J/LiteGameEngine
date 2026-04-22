@@ -122,3 +122,60 @@ sf::Vector2f Scene::getVelocity(Entity entity) const {
     }
     return { 0.f, 0.f };
 }
+
+// Collider
+void Scene::setColliderPosition(Entity entity, const sf::Vector2f& pos) {
+    colliders[entity].ColliderPosition = pos;
+}
+
+sf::Vector2f Scene::getColliderPosition(Entity entity) const {
+    if (auto it = colliders.find(entity); it != colliders.end()) {
+        return it->second.ColliderPosition;
+    }
+    return { 0.f, 0.f };
+}
+
+void Scene::setColliderRotation(Entity entity, const sf::Angle angle) {
+    colliders[entity].ColliderRotation = angle;
+}
+
+sf::Angle Scene::getColliderRotation(Entity entity) const {
+    if (auto it = colliders.find(entity); it != colliders.end()) {
+        return it->second.ColliderRotation;
+    }
+    return sf::degrees(0.f);
+}
+
+void Scene::setColliderScale(Entity entity, const sf::Vector2f& scale) {
+    colliders[entity].ColliderScale = scale;
+}
+
+sf::Vector2f Scene::getColliderScale(Entity entity) const {
+    if (auto it = colliders.find(entity); it != colliders.end()) {
+        return it->second.ColliderScale;
+    }
+    return { 0.f, 0.f };
+}
+
+void Scene::setColliderOrigin(Entity entity, const sf::Vector2f& origin) {
+    colliders[entity].ColliderScale = origin;
+}
+
+sf::Vector2f Scene::getColliderOrigin(Entity entity) const {
+    if (auto it = colliders.find(entity); it != colliders.end()) {
+        return it->second.ColliderOrigin;
+    }
+    return { 0.f, 0.f };
+}
+
+void Scene::setColliderSize(Entity entity, const sf::Vector2f& size) {
+    colliders[entity].ColliderScale = size;
+}
+
+sf::Vector2f Scene::getColliderSize(Entity entity) const {
+    if (auto it = colliders.find(entity); it != colliders.end()) {
+        return it->second.ColliderSize;
+    }
+    return { 0.f, 0.f };
+}
+

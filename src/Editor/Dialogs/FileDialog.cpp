@@ -1,7 +1,7 @@
 #include "FileDialog.hpp"
 #include <iostream>
 #include <algorithm>
-#include <Windows.h>  // Для GetLogicalDrives
+#include <windows.h>  // Для GetLogicalDrives
 
 FileDialog::FileDialog() {
     // Устанавливаем начальную директорию

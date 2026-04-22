@@ -4,6 +4,7 @@
 #include "EditorUI.hpp"
 #include "../Resources/ResourceManager.hpp"
 #include "../Utils/CoordinateConverter.hpp"
+#include "Design/StyleManager.hpp"
 #include <chrono>
 #include <sstream>
 #include <iomanip>
@@ -62,6 +63,25 @@ EditorUI::EditorUI(sf::RenderWindow& window, Scene& scene, Viewport& viewport)
                 m_SelectedEntity = INVALID_ENTITY;
                 std::cout << "Scene loaded from: " << path << std::endl;
             }
+        }
+        });
+
+    m_ContentBrowserPanel = std::make_unique<ContentBrowserPanel>();
+
+    // Колбэк при двойном клике на текстуру
+    m_ContentBrowserPanel->setOnAssetDoubleClicked([this](const std::string& path) {
+        // Создаём сущность с текстурой в центре вьюпорта
+        Entity entity = m_Scene.createEntity();
+        sf::Vector2f center = m_Viewport.getView().getCenter();
+        m_Scene.setPosition(entity, center);
+
+        try {
+            auto texture = ResourceManager::loadTexture(path);
+            m_Scene.setTexture(entity, texture, path);
+            m_SelectedEntity = entity;
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Failed to load texture: " << e.what() << std::endl;
         }
         });
 }
@@ -168,6 +188,11 @@ void EditorUI::renderMainMenu() {
             ImGui::MenuItem("Inspector", nullptr, true);
             ImGui::MenuItem("Content Browser", nullptr, true);
             ImGui::MenuItem("Debug Panel", nullptr, true);
+
+            ImGui::Separator();
+
+            // Селектор стилей
+            StyleManager::getInstance().renderStyleSelector();
             ImGui::EndMenu();
         }
 

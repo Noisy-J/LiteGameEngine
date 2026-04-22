@@ -6,6 +6,7 @@
 #include "ECS/Systems/MovementSystem.hpp"
 #include "ECS/Systems/RenderSystem.hpp"
 #include "Resources/ResourceManager.hpp"
+#include "Design/StyleManager.hpp"
 
 //Только инициализация
 Engine::Engine() {
@@ -16,7 +17,7 @@ Engine::Engine() {
 }
 
 void Engine::initializeWindow() {
-    m_Window.create(sf::VideoMode({ 1920, 1080 }), "Lite Game Engine v1.0.0");
+    m_Window.create(sf::VideoMode({ 1920, 1080 }), "Lite Game Engine v1.0.2b");
     m_Window.setFramerateLimit(60);
 }
 
@@ -24,6 +25,9 @@ void Engine::initializeImGui() {
     if (!ImGui::SFML::Init(m_Window)) {
         throw std::runtime_error("Failed to initialize ImGui");
     }
+
+    // Применяем Modern Dark стиль
+    StyleManager::getInstance().applyStyle(StyleManager::Preset::ModernDark);
 }
 
 //Инициализация viewport с инверсией

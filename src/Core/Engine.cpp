@@ -17,7 +17,11 @@ Engine::Engine() {
 }
 
 void Engine::initializeWindow() {
-    m_Window.create(sf::VideoMode({ 1920, 1080 }), "Lite Game Engine v1.0.2b");
+    auto desktop = sf::VideoMode::getDesktopMode();
+
+    // Создаём окно в стиле "Windowed Fullscreen" (без рамки)
+    // Это удобно для отладки - Alt+Tab работает корректно
+    m_Window.create(desktop, "Lite Game Engine v1.0.2b", sf::Style::None);
     m_Window.setFramerateLimit(60);
 }
 

@@ -58,7 +58,10 @@ void EntityDragger::update(Scene& scene) {
 
     // Проверяем что мышь внутри вьюпорта
     sf::Vector2i pixelPos = sf::Mouse::getPosition(m_Window);
-    if (!m_Viewport.isPointInside(pixelPos)) return;
+    if (!m_Viewport.isPointInside(pixelPos)) {
+        release();
+        return;
+    }
 
     auto tfIt = scene.transforms.find(m_DraggedEntity);
     if (tfIt != scene.transforms.end()) {

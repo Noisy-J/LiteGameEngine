@@ -57,3 +57,32 @@ struct ColliderComponent {
     bool isTrigger{ false };
     bool isStatic{ false };
 };
+
+// Name Component (имя сущности)
+struct NameComponent {
+    std::string Name = "Entity";
+};
+
+// Parent Component (родительская сущность)
+struct ParentComponent {
+    Entity Parent = INVALID_ENTITY;
+};
+
+// Children Component (дочерние сущности)
+struct ChildrenComponent {
+    std::vector<Entity> Children;
+};
+
+// Visibility Component (видимость в редакторе и игре)
+struct VisibilityComponent {
+    bool VisibleInEditor = true;
+    bool VisibleInGame = true;
+    bool ExpandedInHierarchy = true;  // Развёрнута ли в иерархии
+};
+
+// Script Graph Component
+struct ScriptGraphComponent {
+    std::string graphName = "New Script";
+    std::string graphData; // JSON с нодами и связями
+    bool enabled = true;
+};

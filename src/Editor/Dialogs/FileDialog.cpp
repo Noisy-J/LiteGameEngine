@@ -257,6 +257,8 @@ void FileDialog::applySelection() {
     m_IsOpen = false;
     ImGui::CloseCurrentPopup();
 
+    std::cout << "FileDialog: selected path = " << finalPath << std::endl;
+
     if (m_OnFileSelected) {
         m_OnFileSelected(finalPath);
     }

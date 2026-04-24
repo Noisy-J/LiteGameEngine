@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include "../Rendering/Viewport.hpp"
+#include "Utils/CoordinateConverter.hpp"
 
 class CameraController {
 public:

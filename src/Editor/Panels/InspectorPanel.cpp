@@ -10,9 +10,17 @@ void InspectorPanel::render(Entity entity) {
         return;
     }
 
+    // ИМЯ ВСЕГДА ПЕРВОЕ
     ImGui::Text("Entity ID: %d", entity);
     ImGui::SameLine();
-    ImGui::InputText("##Name", m_EntityNameBuffer, sizeof(m_EntityNameBuffer));
+
+    // Поле имени
+    std::string currentName = m_Scene.getEntityName(entity);
+    strcpy_s(m_EntityNameBuffer, currentName.c_str());
+    ImGui::SetNextItemWidth(-1);
+    if (ImGui::InputText("##Name", m_EntityNameBuffer, sizeof(m_EntityNameBuffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
+        m_Scene.setEntityName(entity, m_EntityNameBuffer);
+    }
 
     ImGui::Separator();
 
@@ -59,7 +67,7 @@ void InspectorPanel::renderTransform(Entity entity) {
         tf.Scale = { scale[0], scale[1] };
     }
 
-    if (ImGui::Button("Reset")) {
+    if (ImGui::Button("Reset Transform")) {
         tf.Pos = { 0.f, 0.f };
         tf.Rot = sf::degrees(0.f);
         tf.Scale = { 1.f, 1.f };
@@ -77,7 +85,6 @@ void InspectorPanel::renderSprite(Entity entity) {
             if (spriteComp.texture) {
                 auto texSize = spriteComp.texture->getSize();
                 ImGui::Text("Texture: %dx%d", texSize.x, texSize.y);
-                ImGui::Text("References: %ld", spriteComp.texture.use_count());
             }
             else {
                 ImGui::TextColored(ImVec4(1, 1, 0, 1), "No texture assigned");
@@ -115,16 +122,15 @@ void InspectorPanel::renderSprite(Entity entity) {
 
             // Кнопка удаления компонента
             ImGui::SameLine();
-            if (ImGui::Button("Remove Sprite Component")) {
+            if (ImGui::Button("Remove Sprite")) {
                 m_Scene.sprites.erase(entity);
             }
         }
     }
     else {
         if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen)) {
-            ImGui::TextColored(ImVec4(1, 1, 0, 1), "No sprite component");
+            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No sprite component");
             if (ImGui::Button("Add Sprite Component")) {
-                std::cout << "Add Sprite clicked for entity: " << entity << std::endl;
                 if (m_OnAddSprite) {
                     m_OnAddSprite(entity);
                 }
@@ -139,7 +145,6 @@ void InspectorPanel::renderAddComponentMenu(Entity entity) {
     if (ImGui::BeginCombo("##AddComponent", "Select component...")) {
         if (!m_Scene.sprites.contains(entity)) {
             if (ImGui::Selectable("Sprite")) {
-                std::cout << "Sprite selected from combo for entity: " << entity << std::endl;
                 if (m_OnAddSprite) {
                     m_OnAddSprite(entity);
                 }
@@ -149,25 +154,41 @@ void InspectorPanel::renderAddComponentMenu(Entity entity) {
         if (!m_Scene.velocities.contains(entity)) {
             if (ImGui::Selectable("Velocity")) {
                 m_Scene.velocities[entity] = VelocityComponent{};
-                std::cout << "Added Velocity component to entity: " << entity << std::endl;
             }
         }
 
         if (!m_Scene.colliders.contains(entity)) {
             if (ImGui::Selectable("Collider")) {
                 m_Scene.colliders[entity] = ColliderComponent{};
-                std::cout << "Added Collider component to entity: " << entity << std::endl;
             }
         }
 
         if (!m_Scene.healths.contains(entity)) {
             if (ImGui::Selectable("Health")) {
                 m_Scene.healths[entity] = HealthComponent{};
-                std::cout << "Added Health component to entity: " << entity << std::endl;
+            }
+        }
+
+        if (!m_Scene.scripts.contains(entity)) {
+            if (ImGui::Selectable("Script")) {
+                m_Scene.scripts[entity] = ScriptComponent{};
+                if (m_OnOpenScriptEditor) {
+                    m_OnOpenScriptEditor(entity);
+                }
             }
         }
 
         ImGui::EndCombo();
+    }
+
+    // Кнопка открытия редактора если скрипт уже есть
+    if (m_Scene.scripts.contains(entity)) {
+        ImGui::Spacing();
+        if (ImGui::Button("Open Script Editor", ImVec2(-1, 0))) {
+            if (m_OnOpenScriptEditor) {
+                m_OnOpenScriptEditor(entity);
+            }
+        }
     }
 }
 

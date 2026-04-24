@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "sceneName": "test",
+  "entities": [
+    {
+      "id": 0,
+      "name": "Player",
+      "transform": {"position":{"x":352.000,"y":266.000},"rotation":0.000,"scale":{"x":1.000,"y":1.000}},
+      "sprite": {"texturePath":"./assets/textures\\hero.png","layer":0.000,"visible":true}
+    }
+  ]
+}

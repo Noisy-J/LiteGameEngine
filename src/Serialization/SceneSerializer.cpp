@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iomanip>
 #include <iostream>
+#include <map>
 
 namespace fs = std::filesystem;
 
@@ -117,7 +118,10 @@ bool SceneSerializer::save(const std::string& filepath) {
         return false;
     }
 
-    file << "{\n  \"version\": \"1.0\",\n  \"entities\": [\n";
+    file << "{\n";
+    file << "  \"version\": \"1.0\",\n";
+    file << "  \"sceneName\": \"" << m_Scene.sceneName << "\",\n";
+    file << "  \"entities\": [\n";
 
     bool first = true;
     for (auto& [entity, transform] : m_Scene.transforms) {
@@ -126,21 +130,32 @@ bool SceneSerializer::save(const std::string& filepath) {
 
         file << "    {\n";
         file << "      \"id\": " << entity << ",\n";
+
+        // Имя сущности
+        if (m_Scene.names.find(entity) != m_Scene.names.end()) {
+            file << "      \"name\": " << SimpleJson::string(m_Scene.names[entity].Name) << ",\n";
+        }
+
+        // Родитель
+        if (m_Scene.parents.find(entity) != m_Scene.parents.end()) {
+            file << "      \"parent\": " << m_Scene.parents[entity].Parent << ",\n";
+        }
+
         file << "      \"transform\": " << serializeTransform(entity);
 
-        if (m_Scene.sprites.contains(entity)) {
+        if (m_Scene.sprites.find(entity) != m_Scene.sprites.end()) {
             file << ",\n      \"sprite\": " << serializeSprite(entity);
         }
-        if (m_Scene.velocities.contains(entity)) {
+        if (m_Scene.velocities.find(entity) != m_Scene.velocities.end()) {
             file << ",\n      \"velocity\": " << serializeVelocity(entity);
         }
-        if (m_Scene.colliders.contains(entity)) {
+        if (m_Scene.colliders.find(entity) != m_Scene.colliders.end()) {
             file << ",\n      \"collider\": " << serializeCollider(entity);
         }
-        if (m_Scene.healths.contains(entity)) {
+        if (m_Scene.healths.find(entity) != m_Scene.healths.end()) {
             file << ",\n      \"health\": " << serializeHealth(entity);
         }
-        if (m_Scene.tags.contains(entity)) {
+        if (m_Scene.tags.find(entity) != m_Scene.tags.end()) {
             file << ",\n      \"tag\": " << serializeTag(entity);
         }
 
@@ -165,24 +180,65 @@ bool SceneSerializer::load(const std::string& filepath) {
     while (std::getline(file, line)) json += line;
     file.close();
 
+    // Загружаем имя сцены
+    size_t sceneNamePos = json.find("\"sceneName\":");
+    if (sceneNamePos != std::string::npos) {
+        size_t start = json.find("\"", sceneNamePos + 13) + 1;
+        size_t end = json.find("\"", start);
+        if (start != std::string::npos && end != std::string::npos) {
+            m_Scene.sceneName = json.substr(start, end - start);
+            std::cout << "Loaded scene: " << m_Scene.sceneName << std::endl;
+        }
+    }
+
+    // Карты для маппинга старых ID на новые
+    std::map<Entity, Entity> oldToNewIds;
+    std::map<Entity, Entity> pendingParents;
+
+    // Загружаем сущности
     size_t pos = 0;
     while ((pos = json.find("\"id\":", pos)) != std::string::npos) {
         size_t idStart = json.find_first_of("0123456789", pos);
         size_t idEnd = json.find_first_not_of("0123456789", idStart);
 
+        Entity oldId = static_cast<Entity>(std::stoi(json.substr(idStart, idEnd - idStart)));
         Entity newEntity = m_Scene.createEntity();
+        oldToNewIds[oldId] = newEntity;
+
         if (newEntity == INVALID_ENTITY) continue;
 
         size_t objStart = json.rfind("{", pos);
-        size_t objEnd = json.find("}", objStart);
-        int braceCount = 1;
-        for (size_t i = objStart + 1; i < json.length() && braceCount > 0; ++i) {
+        size_t objEnd = objStart;
+        int braceCount = 0;
+        for (size_t i = objStart; i < json.length(); ++i) {
             if (json[i] == '{') braceCount++;
-            if (json[i] == '}') braceCount--;
-            if (braceCount == 0) objEnd = i;
+            if (json[i] == '}') {
+                braceCount--;
+                if (braceCount == 0) { objEnd = i; break; }
+            }
         }
 
         std::string entityData = json.substr(objStart, objEnd - objStart + 1);
+
+        // Имя сущности
+        size_t namePos = entityData.find("\"name\":");
+        if (namePos != std::string::npos) {
+            size_t start = entityData.find("\"", namePos + 7) + 1;
+            size_t end = entityData.find("\"", start);
+            if (start != std::string::npos && end != std::string::npos) {
+                m_Scene.setEntityName(newEntity, entityData.substr(start, end - start));
+            }
+        }
+
+        // Родитель (отложенная установка)
+        size_t parentPos = entityData.find("\"parent\":");
+        if (parentPos != std::string::npos) {
+            size_t numStart = entityData.find_first_of("0123456789", parentPos);
+            if (numStart != std::string::npos) {
+                Entity parentId = static_cast<Entity>(std::stoi(entityData.substr(numStart)));
+                pendingParents[newEntity] = parentId;
+            }
+        }
 
         deserializeTransform(newEntity, entityData);
 
@@ -203,6 +259,18 @@ bool SceneSerializer::load(const std::string& filepath) {
         }
 
         pos = objEnd + 1;
+    }
+
+    // Устанавливаем родителей после создания всех сущностей
+    for (const auto& pair : pendingParents) {
+        Entity childId = pair.first;
+        Entity parentOldId = pair.second;
+
+        auto it = oldToNewIds.find(parentOldId);
+        if (it != oldToNewIds.end()) {
+            Entity newParent = it->second;
+            m_Scene.setParent(childId, newParent);
+        }
     }
 
     return true;

@@ -37,14 +37,51 @@ public:
 
     // Проверки
     bool isPointInside(const sf::Vector2i& screenPos) const;
-
-    // Отладка
     void renderDebugOverlays(Scene& scene, Entity selectedEntity, const sf::Vector2f& mouseWorldPos);
+
+    // Настройки отображения
+    void setShowGrid(bool show) { m_ShowGrid = show; }
+    bool isShowingGrid() const { return m_ShowGrid; }
+
+    void setShowBounds(bool show) { m_ShowBounds = show; }
+    bool isShowingBounds() const { return m_ShowBounds; }
+
+    void setShowColliders(bool show) { m_ShowColliders = show; }
+    bool isShowingColliders() const { return m_ShowColliders; }
+
+    void setGridSize(float size) { m_GridSize = size; }
+    float getGridSize() const { return m_GridSize; }
+
+    // Режимы мыши
+    enum class MouseMode {
+        Select,
+        Pan,
+        Zoom
+    };
+
+    void setMouseMode(MouseMode mode) { m_MouseMode = mode; }
+    MouseMode getMouseMode() const { return m_MouseMode; }
+
+    bool isMouseInside() const { return m_MouseInside; }
+    void setMouseInside(bool inside) { m_MouseInside = inside; }
 
 private:
     sf::RenderTexture m_RenderTexture;
     sf::Vector2f m_ScreenPosition{ 0.f, 0.f };
     sf::Vector2f m_ScreenSize{ 0.f, 0.f };
 
+    bool m_ShowGrid{ true };
+    bool m_ShowBounds{ true };
+    bool m_ShowColliders{ false };
+    bool m_MouseInside{ false };
+    float m_GridSize{ 100.f };
+    sf::Color m_GridColor{ 60, 60, 60, 100 };
+
+    MouseMode m_MouseMode{ MouseMode::Select };
+
+    void drawGrid();
     void drawMousePosition(const sf::Vector2f& worldPos);
+    void drawSelectionHighlight(Entity entity, Scene& scene);
+
+
 };

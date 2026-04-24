@@ -12,8 +12,9 @@ Entity Scene::createEntity() {
         entity = m_NextEntity++;
     }
 
-    // Каждая сущность всегда имеет Transform
+    // Всегда добавляем Transform и Name
     transforms[entity] = TransformComponent{};
+    names[entity].Name = "Entity " + std::to_string(entity);
 
     return entity;
 }
@@ -123,4 +124,73 @@ sf::Vector2f Scene::getVelocity(Entity entity) const {
         return it->second.Velocity;
     }
     return { 0.f, 0.f };
+}
+
+void Scene::setParent(Entity child, Entity parent) {
+    if (child == parent) return; // Нельзя быть родителем самого себя
+    if (!isValid(child) || !isValid(parent)) return;
+
+    // Удаляем из старого родителя
+    if (parents.find(child) != parents.end()) {
+        Entity oldParent = parents[child].Parent;
+        if (children.find(oldParent) != children.end()) {
+            auto& oldChildren = children[oldParent].Children;
+            oldChildren.erase(std::remove(oldChildren.begin(), oldChildren.end(), child), oldChildren.end());
+        }
+    }
+
+    // Устанавливаем нового родителя
+    parents[child].Parent = parent;
+    if (children.find(parent) == children.end()) {
+        children[parent] = ChildrenComponent{};
+    }
+    children[parent].Children.push_back(child);
+}
+
+void Scene::removeParent(Entity child) {
+    if (parents.find(child) != parents.end()) {
+        Entity parent = parents[child].Parent;
+        if (children.find(parent) != children.end()) {
+            auto& childList = children[parent].Children;
+            childList.erase(std::remove(childList.begin(), childList.end(), child), childList.end());
+        }
+        parents.erase(child);
+    }
+}
+
+std::vector<Entity> Scene::getRootEntities() const {
+    std::vector<Entity> roots;
+    for (const auto& [entity, _] : transforms) {
+        if (parents.find(entity) == parents.end() || parents.at(entity).Parent == INVALID_ENTITY) {
+            roots.push_back(entity);
+        }
+    }
+    return roots;
+}
+
+std::vector<Entity> Scene::getChildren(Entity entity) const {
+    if (children.find(entity) != children.end()) {
+        return children.at(entity).Children;
+    }
+    return {};
+}
+
+Entity Scene::getParent(Entity entity) const {
+    auto it = parents.find(entity);
+    if (it != parents.end()) {
+        return it->second.Parent;
+    }
+    return INVALID_ENTITY;
+}
+
+void Scene::setEntityName(Entity entity, const std::string& name) {
+    names[entity].Name = name;
+}
+
+std::string Scene::getEntityName(Entity entity) const {
+    auto it = names.find(entity);
+    if (it != names.end()) {
+        return it->second.Name;
+    }
+    return "Entity " + std::to_string(entity);
 }
